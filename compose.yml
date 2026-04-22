@@ -1,0 +1,288 @@
+version: "3.9"
+
+x-kafka-common: &kafka-common
+  image: bitnamilegacy/kafka:3.4
+  environment: &kafka-common-env
+    KAFKA_ENABLE_KRAFT: "yes"
+    KAFKA_CFG_PROCESS_ROLES: broker,controller
+    KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    # KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+    KAFKA_KRAFT_CLUSTER_ID: abcdefghijklmnopqrstuv
+    KAFKA_CFG_LISTENERS: PLAINTEXT://:9091,SSL://:9092,CONTROLLER://:9093,EXTERNAL_SSL://:9094
+    KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,EXTERNAL_SSL:SSL
+    KAFKA_CFG_INTER_BROKER_LISTENER_NAME: SSL
+    KAFKA_CFG_SSL_KEYSTORE_PASSWORD: keystore_password
+    KAFKA_CFG_SSL_KEY_PASSWORD: sslkey_password
+    KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD: truststore_password
+    KAFKA_CFG_SSL_CLIENT_AUTH: requested
+    KAFKA_CFG_SSL_PRINCIPAL_MAPPING_RULES: "RULE:^CN=([^,]+).*$/$1/,DEFAULT"
+    ALLOW_PLAINTEXT_LISTENER: "yes"
+    KAFKA_CFG_AUTHORIZER_CLASS_NAME: org.apache.kafka.metadata.authorizer.StandardAuthorizer
+    KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+    KAFKA_CFG_SUPER_USERS: User:ANONYMOUS
+    KAFKA_CLIENT_USERS: user-1,user-2
+    KAFKA_CLIENT_USER_PASSWORDS: user-password-1,user-password-2
+  volumes:
+    - ./infra/kafka/stores:/bitnami/kafka/config/certs
+  healthcheck:
+    test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9091 2>/dev/null || exit 1"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+
+x-practicum-common: &practicum-common
+  build: .
+  deploy:
+  depends_on: &practicum-depends-on
+    kafka-1:
+      condition: service_healthy
+    kafka-2:
+      condition: service_healthy
+    kafka-3:
+      condition: service_healthy
+    kafka-init:
+      condition: service_completed_successfully
+
+services:
+  kafka-1:
+    <<: *kafka-common
+    ports:
+      - "9094:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-1:9092,EXTERNAL_SSL://127.0.0.1:9094
+
+  kafka-2:
+    <<: *kafka-common
+    ports:
+      - "9095:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "2"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-2:9092,EXTERNAL_SSL://127.0.0.1:9095
+
+  kafka-3:
+    <<: *kafka-common
+    ports:
+      - "9096:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "3"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-3:9092,EXTERNAL_SSL://127.0.0.1:9096
+
+  schema-registry:
+    image: bitnamilegacy/schema-registry:7.6
+    ports:
+      - '127.0.0.1:8081:8081'                           # API для регистрации/получения схем
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081    # Прослушивание запросов на порту 8081
+      SCHEMA_REGISTRY_KAFKA_BROKERS: PLAINTEXT://kafka-1:9092,PLAINTEXT://kafka-2:9092,PLAINTEXT://kafka-3:9092  # Список брокеров Kafka
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.0
+    restart: always
+    ports:
+      - "127.0.0.1:8085:8080"                           # Интерфейс доступен на localhost:8080
+    environment:
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092 # Указываем, где искать брокер Kafka
+      KAFKA_CLUSTERS_0_NAME: kraft                     # Название кластера в UI
+
+  kafka-init:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    volumes:
+      - ./infra/kafka/kafka-init.sh:/kafka-init.sh:ro
+      - ./infra/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
+      - ./infra/kafka/client.properties:/etc/kafka/client.properties:ro
+    entrypoint: ["/bin/bash", "/kafka-init.sh"]
+
+  kafka-mirror-1:
+    <<: *kafka-common
+    ports:
+      - "9084:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-mirror-1:9093,2@kafka-mirror-2:9093,3@kafka-mirror-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-mirror-1:9092,EXTERNAL_SSL://127.0.0.1:9084
+
+  kafka-mirror-2:
+    <<: *kafka-common
+    ports:
+      - "9085:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "2"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-mirror-1:9093,2@kafka-mirror-2:9093,3@kafka-mirror-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-mirror-2:9092,EXTERNAL_SSL://127.0.0.1:9085
+
+  kafka-mirror-3:
+    <<: *kafka-common
+    ports:
+      - "9086:9094"
+    environment:
+      <<: *kafka-common-env
+      KAFKA_CFG_NODE_ID: "3"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-mirror-1:9093,2@kafka-mirror-2:9093,3@kafka-mirror-3:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091,SSL://kafka-mirror-3:9092,EXTERNAL_SSL://127.0.0.1:9086
+
+  kafka-mirror-ui:
+    image: provectuslabs/kafka-ui:v0.7.0
+    restart: always
+    ports:
+      - "127.0.0.1:8085:8080"                           # Интерфейс доступен на localhost:8080
+    environment:
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092 # Указываем, где искать брокер Kafka
+      KAFKA_CLUSTERS_0_NAME: kraft                     # Название кластера в UI
+
+  practicum-service-1:
+    <<: *practicum-common
+    environment:
+      - KAFKA_BOOTSTRAP=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - KAFKA_SSL_CA_LOCATION=/etc/kafka/certs/ca.crt
+      - KAFKA_SSL_CERT_LOCATION=/etc/kafka/certs/practicum-1.crt
+      - KAFKA_SSL_KEY_LOCATION=/etc/kafka/certs/practicum-1.key
+      - KAFKA_TOPIC=topic-1
+    volumes:
+      - ./infra/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
+      - ./infra/services/practicum-1/certs/practicum-1.crt:/etc/kafka/certs/practicum-1.crt:ro
+      - ./infra/services/practicum-1/certs/practicum-1.key:/etc/kafka/certs/practicum-1.key:ro
+    depends_on:
+      <<: *practicum-depends-on
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    # container_name: prometheus
+    ports:
+    - "9090:9090"
+    volumes:
+    - ./infra/prometheus:/etc/prometheus
+    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+    links:
+    - kafka-connect
+
+  grafana:
+    build:
+     context: ./infra/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/connect.json
+    ports:
+    - "3000:3000"
+
+  postgres:
+    image: debezium/postgres:16
+    hostname: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres                  # Имя пользователя
+      POSTGRES_PASSWORD: postgres                   # Пароль
+      POSTGRES_DB: postgres                           # Название базы данных
+    volumes:
+      - ./infra/postgres/config.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres-init:
+    image: debezium/postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/postgres-init.sh"]
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - ./scripts:/scripts
+
+  kafka-connect:
+    build:
+      context: ./infra/kafka-connect
+    ports:
+      - "8083:8083"  # REST API Kafka Connect
+      - "9875:9875"
+      - "9876:9876"
+    depends_on:
+      kafka-1:
+        condition: service_started
+      kafka-2:
+        condition: service_started
+      kafka-3:
+        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
+      schema-registry:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: 'kafka-connect'
+      CONNECT_REST_ADVERTISED_HOST_NAME: 'localhost'
+
+      # Хранение конфигурации, смещений и статусов
+      CONNECT_CONFIG_STORAGE_TOPIC: 'connect-config-storage'
+      CONNECT_OFFSET_STORAGE_TOPIC: 'connect-offset-storage'
+      CONNECT_STATUS_STORAGE_TOPIC: 'connect-status-storage'
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 2
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 2
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 2
+
+      # Конвертеры
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+
+      KAFKA_JMX_PORT: '9875'
+      KAFKA_OPTS: "-javaagent:/opt/jmx_prometheus_javaagent-0.15.0.jar=9876:/opt/kafka-connect.yml"
+
+      # Пути к плагинам
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
+    volumes:
+      - ./infra/confluent-hub-components/:/etc/kafka-connect/jars
+
+    kafka-connect-init:
+      image: confluentinc/cp-kafka-connect:latest
+      depends_on:
+        kafka-connect:
+          condition: service_started
+      entrypoint: ["/bin/sh", "/scripts/kafka-connect-init.sh"]
+      volumes:
+        - ./infra/kafka-connect/scripts:/scripts
+
+  debezium-ui:
+    image: debezium/debezium-ui:2.1.2.Final
+    ports:
+      - "8087:8080"
+    environment:
+      KAFKA_CONNECT_URIS: http://kafka-connect:8083
+    depends_on:
+      kafka-connect:
+        condition: service_started
+      postgres:
+        condition: service_healthy

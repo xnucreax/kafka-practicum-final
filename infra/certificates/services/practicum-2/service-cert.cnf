@@ -1,0 +1,18 @@
+[req]
+prompt = no
+distinguished_name = dn
+default_md = sha256
+default_bits = 2048
+
+[dn]
+countryName = RU
+organizationName = Yandex
+organizationalUnitName = Practice
+localityName = Moscow
+commonName = practicum-2
+
+[v3_req]
+subjectKeyIdentifier = hash
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
