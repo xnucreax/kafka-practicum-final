@@ -1,0 +1,37 @@
+{
+  "product_id": "55006",
+  "name": "Монитор UltraView 27\" QHD",
+  "description": "27-дюймовый IPS-монитор с разрешением 2560×1440, частотой 165 Гц и временем отклика 1 мс.",
+  "price": {
+    "amount": 32900.00,
+    "currency": "RUB"
+  },
+  "category": "Мониторы",
+  "brand": "UltraView",
+  "stock": {
+    "available": 30,
+    "reserved": 7
+  },
+  "sku": "UV-55006",
+  "tags": ["монитор", "qhd", "ips", "165гц"],
+  "images": [
+    {
+      "url": "https://example.com/images/product10.jpg",
+      "alt": "UltraView 27 QHD - вид спереди"
+    },
+    {
+      "url": "https://example.com/images/product10_back.jpg",
+      "alt": "UltraView 27 QHD - панель портов"
+    }
+  ],
+  "specifications": {
+    "weight": "5.2kg",
+    "dimensions": "614mm x 415mm x 210mm",
+    "battery_life": "none",
+    "water_resistance": "none"
+  },
+  "created_at": "2024-08-22T09:00:00Z",
+  "updated_at": "2025-03-15T11:00:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

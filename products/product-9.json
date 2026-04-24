@@ -1,0 +1,37 @@
+{
+  "product_id": "55005",
+  "name": "Игровая мышь PrecisionX Pro",
+  "description": "Проводная игровая мышь с сенсором 25600 DPI, 8 программируемыми кнопками и RGB-подсветкой.",
+  "price": {
+    "amount": 4100.00,
+    "currency": "RUB"
+  },
+  "category": "Периферия",
+  "brand": "PrecisionX",
+  "stock": {
+    "available": 145,
+    "reserved": 22
+  },
+  "sku": "PX-55005",
+  "tags": ["мышь", "игровая", "rgb", "проводная"],
+  "images": [
+    {
+      "url": "https://example.com/images/product9.jpg",
+      "alt": "PrecisionX Pro - вид сверху"
+    },
+    {
+      "url": "https://example.com/images/product9_side.jpg",
+      "alt": "PrecisionX Pro - вид сбоку"
+    }
+  ],
+  "specifications": {
+    "weight": "95g",
+    "dimensions": "128mm x 68mm x 42mm",
+    "battery_life": "wired",
+    "water_resistance": "none"
+  },
+  "created_at": "2024-02-14T10:00:00Z",
+  "updated_at": "2024-11-30T15:00:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

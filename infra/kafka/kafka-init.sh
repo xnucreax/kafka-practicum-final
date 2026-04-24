@@ -9,8 +9,8 @@ REPLICATION=2
 TOPICS=(
   "shop-products-raw"
   "shop-products-filtered"
-  "shop-blocked"
-  "shop-blocked-table"
+  "shop-blocker"
+  "shop-blocker-table"
 )
 
 for TOPIC in ${TOPICS[@]}; do

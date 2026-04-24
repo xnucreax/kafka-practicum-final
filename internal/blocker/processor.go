@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	BlockerGroup goka.Group = "blocker"
+	BlockerGroup goka.Group = "shop-blocker"
 )
 
 type ValueCodec struct {
@@ -28,7 +28,7 @@ func addBlockedProduct(ctx goka.Context, msg interface{}) {
 	ctx.SetValue(isBlocked)
 }
 
-func RunBlockerProcessor(ctx context.Context, broker []string, inputStream goka.Stream) {
+func RunBlockerProcessor(ctx context.Context, broker []string, inputStream goka.Stream, opts ...goka.ProcessorOption) {
 	g := goka.DefineGroup(
 		BlockerGroup,
 		goka.Input(
@@ -41,7 +41,7 @@ func RunBlockerProcessor(ctx context.Context, broker []string, inputStream goka.
 		),
 	)
 
-	p, err := goka.NewProcessor(broker, g)
+	p, err := goka.NewProcessor(broker, g, opts...)
 	if err != nil {
 		log.Fatalf("[blocker] error creating processor: %v", err)
 	}

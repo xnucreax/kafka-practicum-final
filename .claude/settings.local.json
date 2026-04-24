@@ -11,7 +11,13 @@
       "Bash(go doc *)",
       "WebFetch(domain:debezium.io)",
       "WebFetch(domain:docs.redhat.com)",
-      "WebFetch(domain:docs.streamnative.io)"
+      "WebFetch(domain:docs.streamnative.io)",
+      "Bash(docker exec *)",
+      "Bash(curl -s http://localhost:8083/connectors/pg-sink/config)",
+      "Bash(curl -s http://localhost:8083/connectors)",
+      "Bash(curl -s -X PUT -H 'Content-Type: application/json' --data '{ *)",
+      "Bash(go run *)",
+      "Bash(chmod +x *)"
     ]
   }
 }

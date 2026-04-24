@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ProductGroup goka.Group = "product"
+	ProductGroup goka.Group = "shop-products"
 )
 
 func processProductFunc(outputTopic goka.Stream) func(ctx goka.Context, input any) {
@@ -42,7 +42,7 @@ func processProductFunc(outputTopic goka.Stream) func(ctx goka.Context, input an
 	}
 }
 
-func RunProductProcessor(ctx context.Context, brokers []string, inputTopic goka.Stream, outputTopic goka.Stream) {
+func RunProductProcessor(ctx context.Context, brokers []string, inputTopic goka.Stream, outputTopic goka.Stream, opts ...goka.ProcessorOption) {
 	g := goka.DefineGroup(
 		ProductGroup,
 		goka.Input(
@@ -60,7 +60,7 @@ func RunProductProcessor(ctx context.Context, brokers []string, inputTopic goka.
 		),
 	)
 
-	p, err := goka.NewProcessor(brokers, g)
+	p, err := goka.NewProcessor(brokers, g, opts...)
 	if err != nil {
 		log.Fatalf("[product] error creating processor: %v", err)
 	}

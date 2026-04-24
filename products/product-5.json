@@ -1,0 +1,37 @@
+{
+  "product_id": "55001",
+  "name": "Портативная колонка BassWave Mini",
+  "description": "Водонепроницаемая Bluetooth-колонка с 360° звуком, 20 часами автономной работы и встроенным микрофоном.",
+  "price": {
+    "amount": 3299.00,
+    "currency": "RUB"
+  },
+  "category": "Электроника",
+  "brand": "BassWave",
+  "stock": {
+    "available": 210,
+    "reserved": 15
+  },
+  "sku": "BW-55001",
+  "tags": ["колонка", "bluetooth", "портативная", "водонепроницаемая"],
+  "images": [
+    {
+      "url": "https://example.com/images/product5.jpg",
+      "alt": "BassWave Mini - вид спереди"
+    },
+    {
+      "url": "https://example.com/images/product5_back.jpg",
+      "alt": "BassWave Mini - вид сзади"
+    }
+  ],
+  "specifications": {
+    "weight": "320g",
+    "dimensions": "90mm x 90mm x 95mm",
+    "battery_life": "20 hours",
+    "water_resistance": "IP67"
+  },
+  "created_at": "2024-03-12T07:30:00Z",
+  "updated_at": "2025-01-20T12:00:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

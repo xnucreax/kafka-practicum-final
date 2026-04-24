@@ -1,0 +1,37 @@
+{
+  "product_id": "55003",
+  "name": "Веб-камера StreamCam 4K",
+  "description": "4K веб-камера с автофокусом, шумоподавляющим микрофоном и широкоугольным объективом 90°.",
+  "price": {
+    "amount": 8750.00,
+    "currency": "RUB"
+  },
+  "category": "Периферия",
+  "brand": "StreamCam",
+  "stock": {
+    "available": 67,
+    "reserved": 8
+  },
+  "sku": "SC-55003",
+  "tags": ["веб-камера", "4k", "стриминг", "видеосвязь"],
+  "images": [
+    {
+      "url": "https://example.com/images/product7.jpg",
+      "alt": "StreamCam 4K - вид спереди"
+    },
+    {
+      "url": "https://example.com/images/product7_side.jpg",
+      "alt": "StreamCam 4K - установлена на мониторе"
+    }
+  ],
+  "specifications": {
+    "weight": "162g",
+    "dimensions": "95mm x 65mm x 65mm",
+    "battery_life": "wired",
+    "water_resistance": "none"
+  },
+  "created_at": "2024-07-08T11:00:00Z",
+  "updated_at": "2025-02-28T10:30:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

@@ -95,6 +95,11 @@ services:
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092 # Указываем, где искать брокер Kafka
       KAFKA_CLUSTERS_0_NAME: kraft                     # Название кластера в UI
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SSL
+      KAFKA_CLUSTERS_0_SSL_TRUSTSTORELOCATION: /etc/kafka/certs/kafka.truststore.jks
+      KAFKA_CLUSTERS_0_SSL_TRUSTSTOREPASSWORD: truststore_password
+    volumes:
+      - ./infra/certificates/kafka/stores/kafka.truststore.jks:/etc/kafka/certs/kafka.truststore.jks:ro
 
   kafka-init:
     image: confluentinc/cp-kafka:latest
@@ -149,6 +154,11 @@ services:
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092 # Указываем, где искать брокер Kafka
       KAFKA_CLUSTERS_0_NAME: kraft                     # Название кластера в UI
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SSL
+      KAFKA_CLUSTERS_0_SSL_TRUSTSTORELOCATION: /etc/kafka/certs/kafka.truststore.jks
+      KAFKA_CLUSTERS_0_SSL_TRUSTSTOREPASSWORD: truststore_password
+    volumes:
+      - ./infra/certificates/kafka/stores/kafka.truststore.jks:/etc/kafka/certs/kafka.truststore.jks:ro
 
   practicum-service-1:
     <<: *practicum-common

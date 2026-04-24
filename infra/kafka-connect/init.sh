@@ -7,7 +7,7 @@ curl -X PUT \
   "connection.url": "jdbc:postgresql://postgres:5432/postgres",
   "connection.username": "postgres",
   "connection.password": "postgres",
-  "topics": "products",
+  "topics": "shop-products-filtered",
   "table.name.format": "products",
   "insert.mode": "upsert",
   "primary.key.mode": "record_value",
@@ -15,6 +15,7 @@ curl -X PUT \
   "auto.create": "true",
   "auto.evolve": "true",
   "db.timezone": "UTC",
-  "tasks.max": "1"
+  "tasks.max": "1",
+  "schemas.enable": "false"
 }' \
 http://kafka-connect:8083/connectors/pg-sink/config

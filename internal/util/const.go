@@ -10,7 +10,7 @@ var (
 	ProductsRawTopic      goka.Stream = "shop-products-raw"
 	ProductsFilteredTopic goka.Stream = "shop-products-filtered"
 
-	BlockerTopic goka.Stream = "shop-blocked"
-	BlockerTable goka.Table  = "shop-blocked-table"
+	BlockerTopic goka.Stream = "shop-blocker"
+	BlockerTable goka.Table  = "shop-blocker-table"
 	// ProductsTable goka.Table = "products-table"
 )

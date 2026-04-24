@@ -1,0 +1,37 @@
+{
+  "product_id": "55004",
+  "name": "Внешний SSD DriveX 1TB",
+  "description": "Портативный SSD-накопитель объёмом 1 ТБ со скоростью чтения 1050 МБ/с и защитой от ударов.",
+  "price": {
+    "amount": 6490.00,
+    "currency": "RUB"
+  },
+  "category": "Накопители",
+  "brand": "DriveX",
+  "stock": {
+    "available": 95,
+    "reserved": 12
+  },
+  "sku": "DX-55004",
+  "tags": ["ssd", "накопитель", "портативный", "usb-c"],
+  "images": [
+    {
+      "url": "https://example.com/images/product8.jpg",
+      "alt": "DriveX 1TB - вид сверху"
+    },
+    {
+      "url": "https://example.com/images/product8_side.jpg",
+      "alt": "DriveX 1TB - разъём USB-C"
+    }
+  ],
+  "specifications": {
+    "weight": "58g",
+    "dimensions": "100mm x 55mm x 8mm",
+    "battery_life": "none",
+    "water_resistance": "IP55"
+  },
+  "created_at": "2023-12-01T08:00:00Z",
+  "updated_at": "2025-01-10T13:00:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

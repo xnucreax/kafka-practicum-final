@@ -1,0 +1,37 @@
+{
+  "product_id": "33441",
+  "name": "Игровое кресло ErgoMax X500",
+  "description": "Эргономичное игровое кресло с поясничной поддержкой, регулируемыми подлокотниками и дышащей сетчатой спинкой.",
+  "price": {
+    "amount": 24500.00,
+    "currency": "RUB"
+  },
+  "category": "Мебель",
+  "brand": "ErgoMax",
+  "stock": {
+    "available": 18,
+    "reserved": 3
+  },
+  "sku": "EM-33441",
+  "tags": ["кресло", "игровое", "эргономика", "офис"],
+  "images": [
+    {
+      "url": "https://example.com/images/product4.jpg",
+      "alt": "ErgoMax X500 - вид спереди"
+    },
+    {
+      "url": "https://example.com/images/product4_side.jpg",
+      "alt": "ErgoMax X500 - вид сбоку"
+    }
+  ],
+  "specifications": {
+    "weight": "18kg",
+    "dimensions": "680mm x 720mm x 1250mm",
+    "battery_life": "none",
+    "water_resistance": "none"
+  },
+  "created_at": "2024-09-01T10:00:00Z",
+  "updated_at": "2025-02-14T09:15:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}

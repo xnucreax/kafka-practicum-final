@@ -1,0 +1,37 @@
+{
+  "product_id": "67890",
+  "name": "Беспроводные наушники SoundPro",
+  "description": "Беспроводные наушники с активным шумоподавлением, 30 часами работы и Hi-Fi звуком.",
+  "price": {
+    "amount": 7499.00,
+    "currency": "RUB"
+  },
+  "category": "Электроника",
+  "brand": "SoundPro",
+  "stock": {
+    "available": 85,
+    "reserved": 10
+  },
+  "sku": "SP-67890",
+  "tags": ["наушники", "аудио", "bluetooth"],
+  "images": [
+    {
+      "url": "https://example.com/images/product2.jpg",
+      "alt": "Наушники SoundPro - вид спереди"
+    },
+    {
+      "url": "https://example.com/images/product2_side.jpg",
+      "alt": "Наушники SoundPro - в сложенном виде"
+    }
+  ],
+  "specifications": {
+    "weight": "250g",
+    "dimensions": "185mm x 160mm x 75mm",
+    "battery_life": "30 hours",
+    "water_resistance": "IPX4"
+  },
+  "created_at": "2024-01-15T09:00:00Z",
+  "updated_at": "2024-03-20T11:45:00Z",
+  "index": "products",
+  "store_id": "store_001"
+}
