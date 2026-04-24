@@ -7,8 +7,7 @@ CMD_CONFIG="/etc/kafka/client.properties"
 PARTITIONS=3
 REPLICATION=2
 TOPICS=(
-  "debezium.public.users"
-  "debezium.public.orders"
+  "debezium.public.products"
 )
 
 for TOPIC in ${TOPICS[@]}; do
@@ -18,21 +17,8 @@ for TOPIC in ${TOPICS[@]}; do
     --replication-factor $REPLICATION \
     --bootstrap-server "$BOOTSTRAP" \
     --if-not-exists
+    # --command-config "$CMD_CONFIG" \
 done
-
-kafka-topics --create --if-not-exists \
-  --topic topic-1 \
-  --partitions 3 \
-  --replication-factor 2 \
-  --bootstrap-server "$BOOTSTRAP" \
-  --command-config "$CMD_CONFIG"
-
-kafka-topics --create --if-not-exists \
-  --topic topic-2 \
-  --partitions 3 \
-  --replication-factor 2 \
-  --bootstrap-server "$BOOTSTRAP" \
-  --command-config "$CMD_CONFIG"
 
 # topic-1: practicum-1 can produce and consume
 kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \

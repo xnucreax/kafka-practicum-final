@@ -18,7 +18,7 @@ RUN go mod download
 COPY cmd/ ./cmd/
 COPY internal/ ./internal/
 
-RUN go build -o /app/bin/app ./cmd/
+RUN go build -o /app/bin/app ./cmd/app
 
 
 FROM gcr.io/distroless/cc-debian12

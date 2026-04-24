@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(go build *)",
+      "Bash(awk *)",
+      "Bash(python3 *)",
+      "Bash(go vet *)",
+      "Bash(go mod *)",
+      "Bash(git checkout *)",
+      "Bash(go doc *)",
+      "WebFetch(domain:debezium.io)",
+      "WebFetch(domain:docs.redhat.com)",
+      "WebFetch(domain:docs.streamnative.io)"
+    ]
+  }
+}

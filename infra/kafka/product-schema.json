@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product",
+  "type": "object",
+  "required": ["product_id", "name", "price", "category", "brand", "stock", "sku", "created_at", "updated_at", "index", "store_id"],
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "category": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "stock": {
+      "type": "object",
+      "required": ["available", "reserved"],
+      "properties": {
+        "available": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reserved": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "sku": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "alt"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "alt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "specifications": {
+      "type": "object",
+      "properties": {
+        "weight": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "string"
+        },
+        "battery_life": {
+          "type": "string"
+        },
+        "water_resistance": {
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "index": {
+      "type": "string"
+    },
+    "store_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

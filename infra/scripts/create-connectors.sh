@@ -22,3 +22,5 @@ curl -X PUT \
 "skipped.operations": "none"
 }' \
 http://localhost:8083/connectors/pg-debezium/config | jq
+
+

@@ -20,10 +20,10 @@ x-kafka-common: &kafka-common
     KAFKA_CFG_AUTHORIZER_CLASS_NAME: org.apache.kafka.metadata.authorizer.StandardAuthorizer
     KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
     KAFKA_CFG_SUPER_USERS: User:ANONYMOUS
-    KAFKA_CLIENT_USERS: user-1,user-2
-    KAFKA_CLIENT_USER_PASSWORDS: user-password-1,user-password-2
+    KAFKA_CLIENT_USERS: kafka-connect
+    KAFKA_CLIENT_USER_PASSWORDS: kafka-connect-password
   volumes:
-    - ./infra/kafka/stores:/bitnami/kafka/config/certs
+    - ./infra/certificates/kafka/stores:/bitnami/kafka/config/certs
   healthcheck:
     test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9091 2>/dev/null || exit 1"]
     interval: 10s
@@ -106,9 +106,9 @@ services:
       kafka-3:
         condition: service_healthy
     volumes:
-      - ./infra/kafka/kafka-init.sh:/kafka-init.sh:ro
-      - ./infra/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
-      - ./infra/kafka/client.properties:/etc/kafka/client.properties:ro
+      - ./infra/certificates/kafka/kafka-init.sh:/kafka-init.sh:ro
+      - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
+      - ./infra/certificates/kafka/client.properties:/etc/kafka/client.properties:ro
     entrypoint: ["/bin/bash", "/kafka-init.sh"]
 
   kafka-mirror-1:
@@ -145,7 +145,7 @@ services:
     image: provectuslabs/kafka-ui:v0.7.0
     restart: always
     ports:
-      - "127.0.0.1:8085:8080"                           # Интерфейс доступен на localhost:8080
+      - "127.0.0.1:8086:8080"                           # Интерфейс доступен на localhost:8086
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092 # Указываем, где искать брокер Kafka
       KAFKA_CLUSTERS_0_NAME: kraft                     # Название кластера в UI
@@ -155,13 +155,9 @@ services:
     environment:
       - KAFKA_BOOTSTRAP=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - KAFKA_SSL_CA_LOCATION=/etc/kafka/certs/ca.crt
-      - KAFKA_SSL_CERT_LOCATION=/etc/kafka/certs/practicum-1.crt
-      - KAFKA_SSL_KEY_LOCATION=/etc/kafka/certs/practicum-1.key
       - KAFKA_TOPIC=topic-1
     volumes:
-      - ./infra/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
-      - ./infra/services/practicum-1/certs/practicum-1.crt:/etc/kafka/certs/practicum-1.crt:ro
-      - ./infra/services/practicum-1/certs/practicum-1.key:/etc/kafka/certs/practicum-1.key:ro
+      - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
     depends_on:
       <<: *practicum-depends-on
 
@@ -215,7 +211,7 @@ services:
     environment:
       PGPASSWORD: postgres
     volumes:
-      - ./scripts:/scripts
+      - ./infra/postgres/postgres-init.sh:/scripts/postgres-init.sh
 
   kafka-connect:
     build:
@@ -266,14 +262,16 @@ services:
     volumes:
       - ./infra/confluent-hub-components/:/etc/kafka-connect/jars
 
-    kafka-connect-init:
-      image: confluentinc/cp-kafka-connect:latest
-      depends_on:
-        kafka-connect:
-          condition: service_started
-      entrypoint: ["/bin/sh", "/scripts/kafka-connect-init.sh"]
-      volumes:
-        - ./infra/kafka-connect/scripts:/scripts
+  kafka-connect-init:
+    image: confluentinc/cp-kafka-connect:latest
+    depends_on:
+      kafka-connect:
+        condition: service_started
+    entrypoint: ["/bin/sh", "/scripts/kafka-connect-init.sh"]
+    environment:
+      KAFKA_CONNECT_URIS: http://kafka-connect:8083
+    volumes:
+      - ./infra/kafka-connect/init.sh:/scripts/kafka-connect-init.sh
 
   debezium-ui:
     image: debezium/debezium-ui:2.1.2.Final
