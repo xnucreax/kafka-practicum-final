@@ -42,17 +42,26 @@ func processProductFunc(outputTopic goka.Stream) func(ctx goka.Context, input an
 	}
 }
 
-func RunProductProcessor(ctx context.Context, brokers []string, inputTopic goka.Stream, outputTopic goka.Stream, opts ...goka.ProcessorOption) {
+func RunProductProcessor(ctx context.Context, brokers []string, inputTopic goka.Stream, outputTopic goka.Stream, srURL string, opts ...goka.ProcessorOption) {
+	inputCodec, err := NewCodec(string(inputTopic), srURL)
+	if err != nil {
+		log.Fatalf("[product] error creating input codec: %v", err)
+	}
+	outputCodec, err := NewCodec(string(outputTopic), srURL)
+	if err != nil {
+		log.Fatalf("[product] error creating output codec: %v", err)
+	}
+
 	g := goka.DefineGroup(
 		ProductGroup,
 		goka.Input(
 			inputTopic,
-			new(Codec),
+			inputCodec,
 			processProductFunc(outputTopic),
 		),
 		goka.Output(
 			outputTopic,
-			new(Codec),
+			outputCodec,
 		),
 		goka.Lookup(
 			goka.GroupTable(blocker.BlockerGroup),

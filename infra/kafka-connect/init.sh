@@ -16,6 +16,9 @@ curl -X PUT \
   "auto.evolve": "true",
   "db.timezone": "UTC",
   "tasks.max": "1",
-  "schemas.enable": "false"
+  "value.converter": "io.confluent.connect.json.JsonSchemaConverter",
+  "value.converter.schema.registry.url": "http://schema-registry:8081",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false"
 }' \
 http://kafka-connect:8083/connectors/pg-sink/config

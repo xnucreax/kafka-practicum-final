@@ -20,6 +20,11 @@ func main() {
 
 	brokers := util.BrokersFromContainer
 
+	srURL := os.Getenv("SCHEMA_REGISTRY_URL")
+	if srURL == "" {
+		log.Fatalln("SCHEMA_REGISTRY_URL is required")
+	}
+
 	var opts []goka.ProcessorOption
 	if caPath := os.Getenv("KAFKA_SSL_CA_LOCATION"); caPath != "" {
 		cfg := util.NewTLSConfig(caPath)
@@ -32,7 +37,7 @@ func main() {
 	}
 
 	go blocker.RunBlockerProcessor(ctx, brokers, util.BlockerTopic, opts...)
-	go product.RunProductProcessor(ctx, brokers, util.ProductsRawTopic, util.ProductsFilteredTopic, opts...)
+	go product.RunProductProcessor(ctx, brokers, util.ProductsRawTopic, util.ProductsFilteredTopic, srURL, opts...)
 
 	log.Println("processors started")
 	<-ctx.Done()

@@ -56,6 +56,11 @@ func main() {
 		log.Fatalln("--path is required")
 	}
 
+	srURL := os.Getenv("SCHEMA_REGISTRY_URL")
+	if srURL == "" {
+		srURL = "http://localhost:8081"
+	}
+
 	f, err := openFile(*path)
 	if err != nil {
 		log.Fatalf("[put-product] cannot open file: %v", err)
@@ -71,7 +76,12 @@ func main() {
 		log.Fatalln("[put-product] product_id is required")
 	}
 
-	value, err := new(product.Codec).Encode(&p)
+	codec, err := product.NewCodec(string(util.ProductsRawTopic), srURL)
+	if err != nil {
+		log.Fatalf("[put-product] cannot create codec: %v", err)
+	}
+
+	value, err := codec.Encode(&p)
 	if err != nil {
 		log.Fatalf("[put-product] encode error: %v", err)
 	}

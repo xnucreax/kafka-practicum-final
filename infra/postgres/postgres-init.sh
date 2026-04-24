@@ -1,18 +1,20 @@
 #!/bin/sh
 
 psql -h postgres -U postgres -d postgres -c "
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    email VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);"
-
-psql -h postgres -U postgres -d postgres -c "
-CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    product_name VARCHAR(100),
-    quantity INT,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS products (
+    product_id  VARCHAR(255) PRIMARY KEY,
+    name        TEXT,
+    description TEXT,
+    price       TEXT,
+    category    TEXT,
+    brand       TEXT,
+    stock       TEXT,
+    sku         TEXT,
+    tags        TEXT,
+    images      TEXT,
+    specifications TEXT,
+    created_at  TEXT,
+    updated_at  TEXT,
+    index       TEXT,
+    store_id    TEXT
 );"
