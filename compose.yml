@@ -14,14 +14,14 @@ x-kafka-common: &kafka-common
     KAFKA_CFG_SSL_KEYSTORE_PASSWORD: keystore_password
     KAFKA_CFG_SSL_KEY_PASSWORD: sslkey_password
     KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD: truststore_password
-    KAFKA_CFG_SSL_CLIENT_AUTH: requested
-    KAFKA_CFG_SSL_PRINCIPAL_MAPPING_RULES: "RULE:^CN=([^,]+).*$/$1/,DEFAULT"
-    ALLOW_PLAINTEXT_LISTENER: "yes"
-    KAFKA_CFG_AUTHORIZER_CLASS_NAME: org.apache.kafka.metadata.authorizer.StandardAuthorizer
-    KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
-    KAFKA_CFG_SUPER_USERS: User:ANONYMOUS
-    KAFKA_CLIENT_USERS: kafka-connect
-    KAFKA_CLIENT_USER_PASSWORDS: kafka-connect-password
+    KAFKA_CFG_SSL_CLIENT_AUTH: none
+    # KAFKA_CFG_SSL_PRINCIPAL_MAPPING_RULES: "RULE:^CN=([^,]+).*$/$1/,DEFAULT"
+    # ALLOW_PLAINTEXT_LISTENER: "yes"
+    # KAFKA_CFG_AUTHORIZER_CLASS_NAME: org.apache.kafka.metadata.authorizer.StandardAuthorizer
+    # KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+    # KAFKA_CFG_SUPER_USERS: User:ANONYMOUS
+    # KAFKA_CLIENT_USERS: kafka-connect
+    # KAFKA_CLIENT_USER_PASSWORDS: kafka-connect-password
   volumes:
     - ./infra/certificates/kafka/stores:/bitnami/kafka/config/certs
   healthcheck:
@@ -106,9 +106,9 @@ services:
       kafka-3:
         condition: service_healthy
     volumes:
-      - ./infra/certificates/kafka/kafka-init.sh:/kafka-init.sh:ro
       - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
-      - ./infra/certificates/kafka/client.properties:/etc/kafka/client.properties:ro
+      - ./infra/kafka/client.properties:/etc/kafka/client.properties:ro
+      - ./infra/kafka/kafka-init.sh:/kafka-init.sh:ro
     entrypoint: ["/bin/bash", "/kafka-init.sh"]
 
   kafka-mirror-1:
@@ -259,14 +259,32 @@ services:
 
       # Пути к плагинам
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
+
+      # SSL
+      CONNECT_SECURITY_PROTOCOL: SSL
+      CONNECT_SSL_TRUSTSTORE_LOCATION: /etc/kafka/certs/kafka.truststore.jks
+      CONNECT_SSL_TRUSTSTORE_PASSWORD: truststore_password
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SSL
+      CONNECT_PRODUCER_SSL_TRUSTSTORE_LOCATION: /etc/kafka/certs/kafka.truststore.jks
+      CONNECT_PRODUCER_SSL_TRUSTSTORE_PASSWORD: truststore_password
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SSL
+      CONNECT_CONSUMER_SSL_TRUSTSTORE_LOCATION: /etc/kafka/certs/kafka.truststore.jks
+      CONNECT_CONSUMER_SSL_TRUSTSTORE_PASSWORD: truststore_password
     volumes:
       - ./infra/confluent-hub-components/:/etc/kafka-connect/jars
+      - ./infra/certificates/kafka/stores/kafka.truststore.jks:/etc/kafka/certs/kafka.truststore.jks:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/connectors || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
   kafka-connect-init:
     image: confluentinc/cp-kafka-connect:latest
     depends_on:
       kafka-connect:
-        condition: service_started
+        condition: service_healthy
     entrypoint: ["/bin/sh", "/scripts/kafka-connect-init.sh"]
     environment:
       KAFKA_CONNECT_URIS: http://kafka-connect:8083
@@ -281,6 +299,6 @@ services:
       KAFKA_CONNECT_URIS: http://kafka-connect:8083
     depends_on:
       kafka-connect:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy

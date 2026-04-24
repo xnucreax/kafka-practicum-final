@@ -10,8 +10,8 @@ curl -X PUT \
   "topics": "products",
   "table.name.format": "products",
   "insert.mode": "upsert",
-  "pk.mode": "record_value",
-  "pk.fields": "product_id",
+  "primary.key.mode": "record_value",
+  "primary.key.fields": "product_id",
   "auto.create": "true",
   "auto.evolve": "true",
   "db.timezone": "UTC",
@@ -20,4 +20,4 @@ curl -X PUT \
   "consumer.override.sasl.mechanism": "PLAIN",
   "consumer.override.sasl.jaas.config": "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"kafka-connect\" password=\"kafka-connect-password\";"
 }' \
-http://localhost:8083/connectors/pg-sink/config
+http://kafka-connect:8083/connectors/pg-sink/config

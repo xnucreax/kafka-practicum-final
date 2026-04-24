@@ -7,10 +7,10 @@ var (
 
 	BrokersFromContainer = []string{"kafka-1:9092", "kafka-2:9092", "kafka-3:9092"}
 
-	ProductsRawTopic      goka.Stream = "shop.products.raw"
-	ProductsFilteredTopic goka.Stream = "shop.products.filtered"
+	ProductsRawTopic      goka.Stream = "shop-products-raw"
+	ProductsFilteredTopic goka.Stream = "shop-products-filtered"
 
-	BlockerTopic goka.Stream = "shop.blocked"
-	BlockerTable goka.Table  = "shop.blocked-table"
+	BlockerTopic goka.Stream = "shop-blocked"
+	BlockerTable goka.Table  = "shop-blocked-table"
 	// ProductsTable goka.Table = "products-table"
 )

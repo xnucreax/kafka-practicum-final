@@ -7,7 +7,10 @@ CMD_CONFIG="/etc/kafka/client.properties"
 PARTITIONS=3
 REPLICATION=2
 TOPICS=(
-  "debezium.public.products"
+  "shop-products-raw"
+  "shop-products-filtered"
+  "shop-blocked"
+  "shop-blocked-table"
 )
 
 for TOPIC in ${TOPICS[@]}; do
@@ -16,24 +19,24 @@ for TOPIC in ${TOPICS[@]}; do
     --partitions $PARTITIONS \
     --replication-factor $REPLICATION \
     --bootstrap-server "$BOOTSTRAP" \
+    --command-config "$CMD_CONFIG" \
     --if-not-exists
-    # --command-config "$CMD_CONFIG" \
 done
 
-# topic-1: practicum-1 can produce and consume
-kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
-  --add --allow-principal "User:practicum-1" \
-  --operation Write --topic topic-1
+# # topic-1: practicum-1 can produce and consume
+# kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
+#   --add --allow-principal "User:practicum-1" \
+#   --operation Write --topic topic-1
 
-kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
-  --add --allow-principal "User:practicum-1" \
-  --operation Read --topic topic-1
+# kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
+#   --add --allow-principal "User:practicum-1" \
+#   --operation Read --topic topic-1
 
-kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
-  --add --allow-principal "User:practicum-1" \
-  --operation Read --group "*"
+# kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
+#   --add --allow-principal "User:practicum-1" \
+#   --operation Read --group "*"
 
-# topic-2: practicum-2 can only produce, not consume
-kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
-  --add --allow-principal "User:practicum-2" \
-  --operation Write --topic topic-2
+# # topic-2: practicum-2 can only produce, not consume
+# kafka-acls --bootstrap-server "$BOOTSTRAP" --command-config "$CMD_CONFIG" \
+#   --add --allow-principal "User:practicum-2" \
+#   --operation Write --topic topic-2
