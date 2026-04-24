@@ -169,6 +169,27 @@ services:
     volumes:
       - ./infra/certificates/kafka/stores/kafka.truststore.jks:/etc/kafka/certs/kafka.truststore.jks:ro
 
+  mirrormaker2:
+    image: bitnamilegacy/kafka:3.4
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+      kafka-mirror-1:
+        condition: service_healthy
+      kafka-mirror-2:
+        condition: service_healthy
+      kafka-mirror-3:
+        condition: service_healthy
+    volumes:
+      - ./infra/mirrormaker2/mm2.properties:/etc/mm2/mm2.properties:ro
+      - ./infra/certificates/kafka/stores/kafka.truststore.jks:/etc/kafka/certs/kafka.truststore.jks:ro
+    entrypoint: ["/opt/bitnami/kafka/bin/connect-mirror-maker.sh", "/etc/mm2/mm2.properties"]
+    restart: on-failure
+
   practicum-service-1:
     <<: *practicum-common
     environment:
