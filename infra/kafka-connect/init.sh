@@ -15,9 +15,6 @@ curl -X PUT \
   "auto.create": "true",
   "auto.evolve": "true",
   "db.timezone": "UTC",
-  "tasks.max": "1",
-  "consumer.override.security.protocol": "SASL_PLAINTEXT",
-  "consumer.override.sasl.mechanism": "PLAIN",
-  "consumer.override.sasl.jaas.config": "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"kafka-connect\" password=\"kafka-connect-password\";"
+  "tasks.max": "1"
 }' \
 http://kafka-connect:8083/connectors/pg-sink/config
