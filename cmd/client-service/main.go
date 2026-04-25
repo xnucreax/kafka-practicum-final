@@ -18,7 +18,7 @@ import (
 )
 
 type clientRequestPayload struct {
-	Name string `json:"query"`
+	Query string `json:"query"`
 }
 
 type findProductRequest struct {
@@ -223,7 +223,7 @@ func produceClientRequest(name string) error {
 	}
 
 	topic := "client-requests"
-	value, err := jsonSerializer.Serialize(topic, &clientRequestPayload{Name: name})
+	value, err := jsonSerializer.Serialize(topic, &clientRequestPayload{Query: name})
 	if err != nil {
 		log.Printf("serialize client request: %v", err)
 		return err

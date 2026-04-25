@@ -1,5 +1,5 @@
 BIN_DIR := binaries
-BINARIES := block-product put-product
+BINARIES := block-tags put-product
 
 .PHONY: all
 all: bins up

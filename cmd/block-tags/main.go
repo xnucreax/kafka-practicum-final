@@ -21,7 +21,7 @@ func main() {
 
 	emitter, err := goka.NewEmitter(util.Brokers, util.BlockerTopic, new(blocker.ValueCodec))
 	if err != nil {
-		log.Fatalf("[block-product] error creating emitter: %v", err)
+		log.Fatalf("[block-tags] error creating emitter: %v", err)
 	}
 	defer emitter.Finish()
 
@@ -30,8 +30,8 @@ func main() {
 		value = 1
 	}
 
-	log.Printf("[block-product] tag=%s blocked=%v", *tag, *blocked)
+	log.Printf("[block-tags] tag=%s blocked=%v", *tag, *blocked)
 	if err = emitter.EmitSync(*tag, value); err != nil {
-		log.Fatalf("[block-product] error emitting: %v", err)
+		log.Fatalf("[block-tags] error emitting: %v", err)
 	}
 }
