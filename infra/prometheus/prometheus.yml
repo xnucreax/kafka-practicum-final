@@ -17,18 +17,23 @@ alerting:
 scrape_configs:
   - job_name: 'kafka'
     static_configs:
-    - targets:
-      - 'jmx-kafka-1:5556'
-      - 'jmx-kafka-2:5556'
-      - 'jmx-kafka-3:5556'
-      - 'jmx-kafka-mirror-1:5556'
-      - 'jmx-kafka-mirror-2:5556'
-      - 'jmx-kafka-mirror-3:5556'
+      - targets:
+          - 'jmx-kafka-1:5556'
+          - 'jmx-kafka-2:5556'
+          - 'jmx-kafka-3:5556'
+        labels:
+          cluster: 'kafka'
+      - targets:
+          - 'jmx-kafka-mirror-1:5556'
+          - 'jmx-kafka-mirror-2:5556'
+          - 'jmx-kafka-mirror-3:5556'
+        labels:
+          cluster: 'kafka-mirror'
 
   - job_name: 'kafka-connect'
     static_configs:
-    - targets:
-      - 'kafka-connect:9876'
+      - targets:
+          - 'kafka-connect:9876'
 
   - job_name: prometheus
     static_configs:

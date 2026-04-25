@@ -91,7 +91,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_controller_activecontrollercount{env=\"$env\"})",
+          "expr": "sum(kafka_controller_activecontrollercount{env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -119,10 +119,10 @@
       "colors": [
         "#299c46",
         "rgba(237, 129, 40, 0.89)",
-         "#d44a3a"
+        "#d44a3a"
       ],
       "datasource": "Prometheus",
-      "description": "Number of partitions that don’t have an active leader and are hence not writable or readable. Alert if value is greater than 0.",
+      "description": "Number of partitions that don\u2019t have an active leader and are hence not writable or readable. Alert if value is greater than 0.",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -174,7 +174,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_controller_offlinepartitionscount{env=\"$env\"})",
+          "expr": "sum(kafka_controller_offlinepartitionscount{env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -200,7 +200,7 @@
       "colorBackground": false,
       "colorValue": true,
       "colors": [
-      "#299c46",
+        "#299c46",
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
@@ -257,7 +257,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_server_replica_manager_underreplicatedpartitions{env=\"$env\"})",
+          "expr": "sum(kafka_server_replica_manager_underreplicatedpartitions{env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -283,7 +283,7 @@
       "colorBackground": false,
       "colorValue": true,
       "colors": [
-      "#299c46",
+        "#299c46",
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
@@ -340,7 +340,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_cluster_partition_underminisr{env=\"$env\"})",
+          "expr": "sum(kafka_cluster_partition_underminisr{env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -366,7 +366,7 @@
       "colorBackground": false,
       "colorValue": true,
       "colors": [
-      "#299c46",
+        "#299c46",
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
@@ -423,7 +423,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_controller_preferredreplicaimbalancecount{env=\"$env\"})",
+          "expr": "sum(kafka_controller_preferredreplicaimbalancecount{env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -522,7 +522,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "count((kafka_server_brokerstate{env=\"$env\"}) == 3 or (kafka_server_brokerstate{env=\"$env\"}) == 4)",
+          "expr": "count((kafka_server_brokerstate{env=\"$env\", cluster=~\"$cluster\"}) == 3 or (kafka_server_brokerstate{env=\"$env\", cluster=~\"$cluster\"}) == 4)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -546,7 +546,7 @@
       "colorBackground": false,
       "colorValue": false,
       "colors": [
-      "#299c46",
+        "#299c46",
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
@@ -604,7 +604,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"Produce\",env=\"$env\"})",
+          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"Produce\",env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -685,7 +685,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"FetchConsumer\",env=\"$env\"})",
+          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"FetchConsumer\",env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -767,7 +767,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"Metadata\",env=\"$env\"})",
+          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"Metadata\",env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -847,7 +847,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"OffsetCommit\",env=\"$env\"})",
+          "expr": "sum(kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",request=~\"OffsetCommit\",env=\"$env\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -920,7 +920,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(kafka_server_broker_topic_metrics_messagesinpersec_rate{topic!=\"\"}) by(topic)",
+          "expr": "sum(kafka_server_broker_topic_metrics_messagesinpersec_rate{topic!=\"\", cluster=~\"$cluster\"}) by(topic)",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -1032,7 +1032,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_server_broker_topic_metrics_messagesinpersec_rate{topic=\"\"}) by (broker)",
+          "expr": "sum(kafka_server_broker_topic_metrics_messagesinpersec_rate{topic=\"\", cluster=~\"$cluster\"}) by (broker)",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -1114,7 +1114,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_server_broker_topic_metrics_bytesinpersec_rate{topic=\"\"}) by (broker)",
+          "expr": "sum(kafka_server_broker_topic_metrics_bytesinpersec_rate{topic=\"\", cluster=~\"$cluster\"}) by (broker)",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -1196,7 +1196,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_server_broker_topic_metrics_bytesoutpersec_rate{topic=\"\"}) by (broker)",
+          "expr": "sum(kafka_server_broker_topic_metrics_bytesoutpersec_rate{topic=\"\", cluster=~\"$cluster\"}) by (broker)",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -1271,7 +1271,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_replica_manager_isrexpandspersec{aggregate=\"OneMinute\",env=\"$env\"}",
+          "expr": "kafka_server_replica_manager_isrexpandspersec{aggregate=\"OneMinute\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Broker={{instance}}",
@@ -1363,7 +1363,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_replica_manager_isrshrinkspersec{aggregate=\"OneMinute\",env=\"$env\"}",
+          "expr": "kafka_server_replica_manager_isrshrinkspersec{aggregate=\"OneMinute\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Broker={{instance}}",
@@ -1459,7 +1459,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"Mean\",env=\"$env\"}",
+          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"Mean\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1469,7 +1469,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"75thPercentile\",env=\"$env\"}",
+          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"75thPercentile\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1478,7 +1478,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"99thPercentile\",env=\"$env\"}",
+          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=~\"99thPercentile\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1487,7 +1487,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=\"OneMinuteRate\",  env=\"$env\"}",
+          "expr": "kafka_controller_stats_leaderelectionrateandtimems{aggregate=\"OneMinuteRate\",  env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Broker={{instance}} / {{aggregate}}",
@@ -1579,7 +1579,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_controller_stats_uncleanleaderelectionspersec{aggregate=\"OneMinuteRate\",env=\"$env\"}",
+          "expr": "kafka_controller_stats_uncleanleaderelectionspersec{aggregate=\"OneMinuteRate\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Broker={{instance}} / {{aggregate}}",
@@ -1673,7 +1673,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_replica_manager_leadercount{env=\"$env\"}",
+          "expr": "kafka_server_replica_manager_leadercount{env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 2,
@@ -1765,7 +1765,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_replica_manager_partitioncount{env=\"$env\"}",
+          "expr": "kafka_server_replica_manager_partitioncount{env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Broker={{instance}}",
@@ -1829,6 +1829,29 @@
       {
         "allValue": null,
         "current": {
+          "text": "kafka",
+          "value": "kafka"
+        },
+        "datasource": "Prometheus",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Cluster",
+        "multi": false,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(kafka_server_brokerstate, cluster)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
           "text": "docker",
           "value": "docker"
         },
@@ -1839,7 +1862,7 @@
         "multi": false,
         "name": "env",
         "options": [],
-        "query": "label_values(kafka_server_brokerstate, env)",
+        "query": "label_values(kafka_server_brokerstate{cluster=~\"$cluster\"}, env)",
         "refresh": 1,
         "regex": "",
         "sort": 0,

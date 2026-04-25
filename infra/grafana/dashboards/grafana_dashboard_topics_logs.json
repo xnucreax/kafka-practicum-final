@@ -136,7 +136,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_log_size{env=\"$env\", topic=\"$topic\"})",
+          "expr": "sum(kafka_log_size{env=\"$env\", topic=\"$topic\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -216,7 +216,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "count_values(\"partition\", kafka_log_numlogsegments{topic=\"$topic\"})",
+          "expr": "count_values(\"partition\", kafka_log_numlogsegments{topic=\"$topic\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -298,7 +298,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_cluster_partition_underminisr{env=\"$env\", topic=\"$topic\"})",
+          "expr": "sum(kafka_cluster_partition_underminisr{env=\"$env\", topic=\"$topic\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -379,7 +379,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kafka_cluster_partition_underreplicated{env=\"$env\", topic=\"$topic\"})",
+          "expr": "sum(kafka_cluster_partition_underreplicated{env=\"$env\", topic=\"$topic\", cluster=~\"$cluster\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -524,7 +524,7 @@
       ],
       "targets": [
         {
-          "expr": "kafka_log_numlogsegments{topic=\"$topic\", env=\"$env\"}",
+          "expr": "kafka_log_numlogsegments{topic=\"$topic\", env=\"$env\", cluster=~\"$cluster\"}",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -573,7 +573,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_broker_topic_metrics_messagesinpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\"}",
+          "expr": "kafka_server_broker_topic_metrics_messagesinpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -657,7 +657,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_broker_topic_metrics_bytesinpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\"}",
+          "expr": "kafka_server_broker_topic_metrics_bytesinpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -741,7 +741,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_broker_topic_metrics_bytesoutpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\"}",
+          "expr": "kafka_server_broker_topic_metrics_bytesoutpersec_rate{topic=\"$topic\", env=\"$env\", aggregate=\"OneMinute\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -800,6 +800,29 @@
     "list": [
       {
         "allValue": null,
+        "current": {
+          "text": "kafka",
+          "value": "kafka"
+        },
+        "datasource": "Prometheus",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Cluster",
+        "multi": false,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(kafka_server_brokerstate, cluster)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
         "current": {},
         "datasource": "Prometheus",
         "hide": 0,
@@ -808,7 +831,7 @@
         "multi": false,
         "name": "env",
         "options": [],
-        "query": "label_values(kafka_log_size, env)",
+        "query": "label_values(kafka_log_size{cluster=~\"$cluster\"}, env)",
         "refresh": 2,
         "regex": "",
         "sort": 0,
@@ -828,7 +851,7 @@
         "multi": true,
         "name": "topic",
         "options": [],
-        "query": "label_values(kafka_log_size, topic)",
+        "query": "label_values(kafka_log_size{cluster=~\"$cluster\"}, topic)",
         "refresh": 2,
         "regex": "",
         "sort": 5,

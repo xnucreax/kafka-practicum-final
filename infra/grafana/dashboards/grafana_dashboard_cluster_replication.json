@@ -94,7 +94,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_broker_topic_metrics_replicationbytesinpersec_rate{aggregate=\"OneMinute\",env=\"$env\"}",
+          "expr": "kafka_server_broker_topic_metrics_replicationbytesinpersec_rate{aggregate=\"OneMinute\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -186,7 +186,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_broker_topic_metrics_replicationbytesoutpersec_rate{aggregate=\"OneMinute\",env=\"$env\"}",
+          "expr": "kafka_server_broker_topic_metrics_replicationbytesoutpersec_rate{aggregate=\"OneMinute\",env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -272,7 +272,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_replica_fetcher_manager_maxlag_value{env=\"$env\"}",
+          "expr": "kafka_server_replica_fetcher_manager_maxlag_value{env=\"$env\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -363,7 +363,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_fetcher_stats_bytespersec{env=\"$env\", aggregate=\"OneMinute\"}",
+          "expr": "kafka_server_fetcher_stats_bytespersec{env=\"$env\", aggregate=\"OneMinute\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Host {{instance}}, client_id={{client_id}} / {{broker_host}}:{{broker_port}}",
@@ -456,7 +456,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_fetcher_stats_requestspersec{env=\"$env\", aggregate=\"OneMinute\"}",
+          "expr": "kafka_server_fetcher_stats_requestspersec{env=\"$env\", aggregate=\"OneMinute\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Host {{instance}}, client_id={{client_id}} / {{broker_host}}:{{broker_port}}",
@@ -518,6 +518,29 @@
     "list": [
       {
         "allValue": null,
+        "current": {
+          "text": "kafka",
+          "value": "kafka"
+        },
+        "datasource": "Prometheus",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Cluster",
+        "multi": false,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(kafka_server_brokerstate, cluster)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
         "current": {},
         "datasource": "Prometheus",
         "hide": 0,
@@ -526,7 +549,7 @@
         "multi": false,
         "name": "env",
         "options": [],
-        "query": "label_values(kafka_server_brokerstate, env)",
+        "query": "label_values(kafka_server_brokerstate{cluster=~\"$cluster\"}, env)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
