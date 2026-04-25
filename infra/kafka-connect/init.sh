@@ -22,3 +22,23 @@ curl -X PUT \
   "key.converter.schemas.enable": "false"
 }' \
 http://kafka-connect:8083/connectors/pg-sink/config
+
+curl -X PUT \
+-H "Content-Type: application/json" \
+--data '{
+  "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+  "connection.url": "jdbc:postgresql://postgres:5432/postgres",
+  "connection.username": "postgres",
+  "connection.password": "postgres",
+  "topics": "client-requests",
+  "table.name.format": "client_requests",
+  "insert.mode": "insert",
+  "auto.create": "false",
+  "db.timezone": "UTC",
+  "tasks.max": "1",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.schemas.enable": "true"
+}' \
+http://kafka-connect:8083/connectors/pg-client-requests-sink/config

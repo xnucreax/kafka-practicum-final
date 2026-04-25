@@ -1,6 +1,10 @@
 #!/bin/sh
 
 psql -h postgres -U postgres -d postgres -c "
+CREATE TABLE IF NOT EXISTS client_requests (
+    query TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS products (
     product_id  VARCHAR(255) PRIMARY KEY,
     name        TEXT,

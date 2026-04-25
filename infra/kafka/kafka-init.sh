@@ -11,6 +11,7 @@ TOPICS=(
   "shop-products-filtered"
   "shop-blocker"
   "shop-blocker-table"
+  "client-requests"
 )
 
 for TOPIC in ${TOPICS[@]}; do
