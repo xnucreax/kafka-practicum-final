@@ -5,56 +5,23 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/jsonschema"
 	"github.com/jackc/pgx/v5"
+
+	"practicum/internal/product"
+	"practicum/internal/util"
 )
+
+type clientRequestPayload struct {
+	Name string `json:"query"`
+}
 
 type findProductRequest struct {
 	Name string `json:"name"`
-}
-
-type product struct {
-	ProductID      string `json:"product_id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	Price          string `json:"price"`
-	Category       string `json:"category"`
-	Brand          string `json:"brand"`
-	Stock          string `json:"stock"`
-	SKU            string `json:"sku"`
-	Tags           string `json:"tags"`
-	Images         string `json:"images"`
-	Specifications string `json:"specifications"`
-	CreatedAt      string `json:"created_at"`
-	UpdatedAt      string `json:"updated_at"`
-	Index          string `json:"index"`
-	StoreID        string `json:"store_id"`
-}
-
-// clientRequestMessage is the Kafka Connect embedded-schema envelope.
-// JsonConverter with schemas.enable=true reads this on the sink side.
-type clientRequestMessage struct {
-	Schema  clientRequestSchema  `json:"schema"`
-	Payload clientRequestPayload `json:"payload"`
-}
-
-type clientRequestSchema struct {
-	Type     string                  `json:"type"`
-	Name     string                  `json:"name"`
-	Optional bool                    `json:"optional"`
-	Fields   []clientRequestField    `json:"fields"`
-}
-
-type clientRequestField struct {
-	Field    string `json:"field"`
-	Type     string `json:"type"`
-	Optional bool   `json:"optional"`
-}
-
-type clientRequestPayload struct {
-	Query string `json:"query"`
 }
 
 var (
@@ -66,16 +33,16 @@ func main() {
 	ctx := context.Background()
 
 	var err error
-	db, err = pgx.Connect(ctx, mustEnv("POSTGRES_DSN"))
+	db, err = pgx.Connect(ctx, util.MustEnv("POSTGRES_DSN"))
 	if err != nil {
 		log.Fatalf("connect postgres: %v", err)
 	}
 	defer db.Close(ctx)
 
 	producer, err = kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": mustEnv("KAFKA_BOOTSTRAP"),
+		"bootstrap.servers": util.MustEnv("KAFKA_BOOTSTRAP"),
 		"security.protocol": "SSL",
-		"ssl.ca.location":   mustEnv("KAFKA_SSL_CA_LOCATION"),
+		"ssl.ca.location":   util.MustEnv("KAFKA_SSL_CA_LOCATION"),
 	})
 	if err != nil {
 		log.Fatalf("create producer: %v", err)
@@ -86,7 +53,7 @@ func main() {
 	mux.HandleFunc("POST /find-product", handleFindProduct)
 	mux.HandleFunc("GET /recommendations", handleRecommendations)
 
-	addr := mustEnv("HTTP_ADDR")
+	addr := util.MustEnv("HTTP_ADDR")
 	log.Printf("listening on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("server: %v", err)
@@ -113,9 +80,9 @@ func handleFindProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	products := []product{}
+	products := []product.ProductPayload{}
 	for rows.Next() {
-		var p product
+		var p product.ProductPayload
 		if err := rows.Scan(
 			&p.ProductID, &p.Name, &p.Description, &p.Price, &p.Category,
 			&p.Brand, &p.Stock, &p.SKU, &p.Tags, &p.Images,
@@ -133,7 +100,11 @@ func handleFindProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	produceClientRequest(req.Name)
+	if err := produceClientRequest(req.Name); err != nil {
+		log.Printf("produce client request: %v", err)
+		http.Error(w, "kafka error", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
@@ -144,34 +115,36 @@ func handleRecommendations(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "not implemented"})
 }
 
-func produceClientRequest(query string) {
-	msg := clientRequestMessage{
-		Schema: clientRequestSchema{
-			Type:     "struct",
-			Name:     "ClientRequest",
-			Optional: false,
-			Fields: []clientRequestField{
-				{Field: "query", Type: "string", Optional: false},
-			},
-		},
-		Payload: clientRequestPayload{Query: query},
+func produceClientRequest(name string) error {
+	client, err := schemaregistry.NewClient(schemaregistry.NewConfig(util.MustEnv("SCHEMA_REGISTRY_URL")))
+	if err != nil {
+		log.Printf("create schema registry client: %v", err)
+		return err
 	}
-	value, _ := json.Marshal(msg)
+
+	serializerConfig := jsonschema.NewSerializerConfig()
+	serializerConfig.AutoRegisterSchemas = false
+	serializerConfig.UseLatestVersion = true
+	jsonSerializer, err := jsonschema.NewSerializer(client, serde.ValueSerde, serializerConfig)
+	if err != nil {
+		log.Printf("create json schema serializer: %v", err)
+		return err
+	}
 
 	topic := "client-requests"
-	err := producer.Produce(&kafka.Message{
+	value, err := jsonSerializer.Serialize(topic, &clientRequestPayload{Name: name})
+	if err != nil {
+		log.Printf("serialize client request: %v", err)
+		return err
+	}
+
+	err = producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 		Value:          value,
 	}, nil)
 	if err != nil {
-		log.Printf("produce client-request: %v", err)
+		log.Printf("produce client request: %v", err)
+		return err
 	}
-}
-
-func mustEnv(key string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		log.Fatalf("env %s is required", key)
-	}
-	return v
+	return nil
 }

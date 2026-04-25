@@ -36,9 +36,9 @@ curl -X PUT \
   "auto.create": "false",
   "db.timezone": "UTC",
   "tasks.max": "1",
+  "value.converter": "io.confluent.connect.json.JsonSchemaConverter",
+  "value.converter.schema.registry.url": "http://schema-registry:8081",
   "key.converter": "org.apache.kafka.connect.json.JsonConverter",
-  "key.converter.schemas.enable": "false",
-  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-  "value.converter.schemas.enable": "true"
+  "key.converter.schemas.enable": "false"
 }' \
 http://kafka-connect:8083/connectors/pg-client-requests-sink/config

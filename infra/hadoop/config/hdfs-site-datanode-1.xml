@@ -6,7 +6,7 @@
 </property>
 <property>
   <name>dfs.datanode.hostname</name>
-  <value>localhost</value>
+  <value>hadoop-datanode-1</value>
 </property>
 <!-- RPC порт для запросов от NameNode -->
 <property>

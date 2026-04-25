@@ -1,52 +1,78 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"os"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/apache/spark-connect-go/v34/client/sql"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/colinmarc/hdfs/v2"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/google/uuid"
+
+	"practicum/internal/util"
 )
 
 const (
-	productsDir = "/data/allowed-products"
-	requestsDir = "/data/client-requests"
-	resultsDir  = "/analytics/recommendations"
-	recsTopic   = "recommendations"
+	hdfsNamenode = "hadoop-namenode:9000"
+	productsDir  = "/data/allowed-products"
+	requestsDir  = "/data/client-requests"
+	resultsDir   = "/analytics/recommendations"
+	recsTopic    = "recommendations"
+
+	topicProducts = "source.shop-products-filtered"
+	topicRequests = "source.client-requests"
 )
 
-// sparkSession is a local interface so we can pass the session to helper functions
-// without naming the unexported sql.sparkSession type from the library.
+// sparkSession is a local interface to avoid naming the unexported sql.sparkSession type.
 type sparkSession interface {
 	Read() sql.DataFrameReader
 	Sql(query string) (sql.DataFrame, error)
 }
 
-type RecommendationValue struct {
-	ProductID      string `json:"product_id"`
-	PurchasedCount int    `json:"purchased_count"`
-	ViewedCount    int    `json:"viewed_count"`
-	EventCount     int    `json:"event_count"`
+type Recommendations struct {
+	ProductIDs []string `json:"product_ids"`
 }
 
 func main() {
+	ctx := context.Background()
+
+	caLocation := util.MustEnv("KAFKA_SSL_CA_LOCATION")
+	mirrorBootstrap := util.MustEnv("KAFKA_MIRROR_BOOTSTRAP")
+	sparkRemote := util.MustEnv("SPARK_REMOTE")
+
+	dialFunc := (&net.Dialer{
+		Timeout:   60 * time.Second,
+		KeepAlive: 60 * time.Second,
+	}).DialContext
+
+	hdfsClient, err := hdfs.NewClient(hdfs.ClientOptions{
+		Addresses:           []string{hdfsNamenode},
+		User:                "root",
+		NamenodeDialFunc:    dialFunc,
+		DatanodeDialFunc:    dialFunc,
+		UseDatanodeHostname: true,
+	})
+	if err != nil {
+		log.Fatalf("create hdfs client: %v", err)
+	}
+	defer hdfsClient.Close()
+
 	for _, dir := range []string{productsDir, requestsDir, resultsDir} {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			log.Fatalf("mkdir %s: %v", dir, err)
+		if err := hdfsClient.MkdirAll(dir, 0755); err != nil {
+			log.Fatalf("hdfs mkdir %s: %v", dir, err)
 		}
 	}
 
-	caLocation := mustEnv("KAFKA_SSL_CA_LOCATION")
-
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":  mustEnv("KAFKA_MIRROR_BOOTSTRAP"),
+		"bootstrap.servers":  mirrorBootstrap,
 		"group.id":           "analytics-consumer-group",
-		"auto.offset.reset":  "earliest",
-		"enable.auto.commit": true,
+		"enable.auto.commit": false,
 		"session.timeout.ms": 6000,
 		"security.protocol":  "SSL",
 		"ssl.ca.location":    caLocation,
@@ -54,13 +80,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("create consumer: %v", err)
 	}
-	if err := consumer.Subscribe("source.shop-products-filtered", nil); err != nil {
+	if err := consumer.SubscribeTopics([]string{
+		topicProducts,
+		topicRequests,
+	}, nil); err != nil {
 		log.Fatalf("subscribe: %v", err)
 	}
 	defer consumer.Close()
 
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": mustEnv("KAFKA_BOOTSTRAP"),
+		"bootstrap.servers": mirrorBootstrap,
 		"security.protocol": "SSL",
 		"ssl.ca.location":   caLocation,
 	})
@@ -69,28 +98,44 @@ func main() {
 	}
 	defer producer.Close()
 
-	spark, err := sql.SparkSession.Builder.Remote(mustEnv("SPARK_REMOTE")).Build()
+	spark, err := sql.SparkSession.Builder.Remote(sparkRemote).Build()
 	if err != nil {
 		log.Fatalf("connect to Spark: %v", err)
 	}
 	defer spark.Stop()
 
 	go func() {
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
-		for range ticker.C {
-			if err := runAnalyticsJob(spark, producer); err != nil {
-				log.Printf("[analytics] job error: %v", err)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := runAnalyticsJob(spark, hdfsClient, producer); err != nil {
+					log.Printf("[analytics] job error: %v", err)
+				}
 			}
 		}
 	}()
 
-	// Consume products from the mirror cluster and persist to shared volume.
-	// msg.Value is Confluent wire format: 1 magic byte + 4 schema-ID bytes + JSON payload.
 	for {
 		msg, err := consumer.ReadMessage(100 * time.Millisecond)
+
 		if err == nil {
-			writeProduct(msg.Value)
+			var writeErr error
+			switch *msg.TopicPartition.Topic {
+			case topicProducts:
+				writeErr = writeProduct(hdfsClient, msg.Value)
+			case topicRequests:
+				writeErr = writeClientRequest(hdfsClient, msg.Value)
+			}
+			if writeErr != nil {
+				log.Printf("write message: %v", writeErr)
+			} else if _, err := consumer.CommitMessage(msg); err != nil {
+				log.Printf("commit offset: %v", err)
+			}
 		} else {
 			var kafkaErr kafka.Error
 			if errors.As(err, &kafkaErr) && kafkaErr.IsFatal() {
@@ -100,118 +145,180 @@ func main() {
 	}
 }
 
-func writeProduct(raw []byte) {
-	// Strip the 5-byte Confluent wire-format prefix before writing clean JSON.
+// writeProduct strips the 5-byte Confluent wire-format prefix and writes the JSON to HDFS.
+// Overwrites if the file already exists (products are keyed by product_id).
+func writeProduct(client *hdfs.Client, raw []byte) error {
 	if len(raw) < 6 {
-		return
+		return fmt.Errorf("message too short")
 	}
 	jsonBytes := raw[5:]
 
 	var p struct {
 		ProductID string `json:"product_id"`
 	}
-	if err := json.Unmarshal(jsonBytes, &p); err != nil || p.ProductID == "" {
-		return
+	if err := json.Unmarshal(jsonBytes, &p); err != nil {
+		return fmt.Errorf("unmarshal product: %w", err)
+	}
+	if p.ProductID == "" {
+		return fmt.Errorf("empty product_id")
 	}
 
 	path := fmt.Sprintf("%s/%s.json", productsDir, p.ProductID)
-	if err := os.WriteFile(path, jsonBytes, 0644); err != nil {
-		log.Printf("write product %s: %v", p.ProductID, err)
-	}
+	// _ = client.Remove(path)
+	return writeHDFS(client, path, jsonBytes)
 }
 
-func runAnalyticsJob(spark sparkSession, producer *kafka.Producer) error {
-	products, err := spark.Read().Format("json").Load("file://" + productsDir)
+// writeClientRequest extracts the query from the Kafka Connect embedded-schema envelope
+// and writes it as a plain {"query":"..."} JSON file to HDFS.
+func writeClientRequest(client *hdfs.Client, raw []byte) error {
+	var envelope struct {
+		Payload struct {
+			Query string `json:"query"`
+		} `json:"payload"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return fmt.Errorf("unmarshal client request: %w", err)
+	}
+	if envelope.Payload.Query == "" {
+		return fmt.Errorf("empty query")
+	}
+
+	data, _ := json.Marshal(map[string]string{"query": envelope.Payload.Query})
+	path := fmt.Sprintf("%s/%s.json", requestsDir, uuid.New().String())
+	return writeHDFS(client, path, data)
+}
+
+func writeHDFS(client *hdfs.Client, path string, data []byte) error {
+	writer, err := client.Create(path)
+	if err != nil {
+		return fmt.Errorf("hdfs create %s: %w", path, err)
+	}
+	if _, err := writer.Write(data); err != nil {
+		writer.Close()
+		return fmt.Errorf("hdfs write %s: %w", path, err)
+	}
+	if err := writer.Close(); err != nil {
+		return fmt.Errorf("hdfs close %s: %w", path, err)
+	}
+	return nil
+}
+
+func isNoDataErr(err error) bool {
+	return strings.Contains(err.Error(), "UNABLE_TO_INFER_SCHEMA")
+}
+
+func hdfsHasFiles(client *hdfs.Client, dir string) bool {
+	entries, err := client.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			return true
+		}
+	}
+	return false
+}
+
+func runAnalyticsJob(spark sparkSession, hdfsClient *hdfs.Client, producer *kafka.Producer) error {
+	if !hdfsHasFiles(hdfsClient, productsDir) {
+		log.Printf("[analytics] skipping job: no products in hdfs yet")
+		return nil
+	}
+	if !hdfsHasFiles(hdfsClient, requestsDir) {
+		log.Printf("[analytics] skipping job: no client requests in hdfs yet")
+		return nil
+	}
+
+	hdfsBase := "hdfs://" + hdfsNamenode
+
+	products, err := spark.Read().Format("json").Load(hdfsBase + productsDir)
 	if err != nil {
 		return fmt.Errorf("load products: %w", err)
 	}
 	if err := products.CreateTempView("products", true, false); err != nil {
+		if isNoDataErr(err) {
+			log.Printf("[analytics] skipping job: no products in hdfs yet")
+			return nil
+		}
 		return fmt.Errorf("create products view: %w", err)
 	}
 
-	requests, err := spark.Read().Format("json").Load("file://" + requestsDir)
+	requests, err := spark.Read().Format("json").Load(hdfsBase + requestsDir)
 	if err != nil {
 		return fmt.Errorf("load requests: %w", err)
 	}
 	if err := requests.CreateTempView("client_requests", true, false); err != nil {
+		if isNoDataErr(err) {
+			log.Printf("[analytics] skipping job: no client requests in hdfs yet")
+			return nil
+		}
 		return fmt.Errorf("create requests view: %w", err)
 	}
 
+	// Algorithm:
+	// 1. Find products whose name matches a search query.
+	// 2. Collect all tags from those matched products.
+	// 3. Find every product that shares at least one of those tags.
 	recs, err := spark.Sql(`
-		SELECT
-			q.query,
-			p.product_id,
-			CAST(rand() * 100 AS INT) AS viewed_count,
-			CAST(rand() * 50  AS INT) AS purchased_count,
-			q.event_count
-		FROM (
-			SELECT query, count(*) AS event_count
-			FROM client_requests
-			WHERE type = 'SEARCH_PRODUCT_REQUEST'
-			GROUP BY query
-		) q
+		WITH matched AS (
+			SELECT DISTINCT cr.query, p.product_id, p.tags
+			FROM client_requests cr
+			JOIN products p ON lower(p.name) LIKE concat('%', lower(cr.query), '%')
+		),
+		matched_tags AS (
+			SELECT DISTINCT m.query, tag
+			FROM matched m
+			LATERAL VIEW explode(m.tags) t AS tag
+		)
+		SELECT DISTINCT mt.query, p.product_id
+		FROM matched_tags mt
 		JOIN products p
-		  ON lower(p.name) LIKE concat('%', lower(q.query), '%')
+		  LATERAL VIEW explode(p.tags) t2 AS product_tag
+		WHERE product_tag = mt.tag
 	`)
 	if err != nil {
 		return fmt.Errorf("analytics sql: %w", err)
 	}
 
-	if err := recs.Write().Mode("overwrite").Format("json").Save("file://" + resultsDir); err != nil {
-		return fmt.Errorf("save recommendations: %w", err)
-	}
-
+	// Collect once — avoids executing the Spark query a second time for Write().
 	rows, err := recs.Collect()
 	if err != nil {
 		return fmt.Errorf("collect rows: %w", err)
 	}
 
-	topic := recsTopic
-	count := 0
-	for _, row := range rows {
+	result := Recommendations{
+		ProductIDs: make([]string, len(rows)),
+	}
+	for i, row := range rows {
 		vals, err := row.Values()
-		if err != nil || len(vals) < 5 {
+		if err != nil || len(vals) < 2 {
 			continue
 		}
-		query, _ := vals[0].(string)
 		productID, _ := vals[1].(string)
-
-		value := RecommendationValue{
-			ProductID:      productID,
-			ViewedCount:    anyToInt(vals[2]),
-			PurchasedCount: anyToInt(vals[3]),
-			EventCount:     anyToInt(vals[4]),
-		}
-		valueBytes, _ := json.Marshal(value)
-
-		_ = producer.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:            []byte(query),
-			Value:          valueBytes,
-		}, nil)
-		count++
+		result.ProductIDs[i] = productID
 	}
+
+	resultsFile := resultsDir + "/results.json"
+	_ = hdfsClient.Remove(resultsFile)
+	data, err := json.Marshal(result)
+	if err != nil {
+		return fmt.Errorf("marshal results: %w", err)
+	}
+	if err := writeHDFS(hdfsClient, resultsFile, data); err != nil {
+		log.Printf("[analytics] write results to hdfs: %v", err)
+	}
+
+	topic := recsTopic
+	_ = producer.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &topic,
+			Partition: kafka.PartitionAny,
+		},
+		Value: data,
+	}, nil)
+
 	producer.Flush(5000)
-	log.Printf("[analytics] produced %d recommendations", count)
+	log.Printf("[analytics] produced recommendations: %v", result.ProductIDs)
 	return nil
-}
-
-func anyToInt(v any) int {
-	switch n := v.(type) {
-	case int32:
-		return int(n)
-	case int64:
-		return int(n)
-	case int:
-		return n
-	}
-	return 0
-}
-
-func mustEnv(key string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		log.Fatalf("env %s is required", key)
-	}
-	return v
 }
