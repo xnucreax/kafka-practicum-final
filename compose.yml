@@ -15,6 +15,7 @@ x-kafka-common: &kafka-common
     KAFKA_CFG_SSL_KEY_PASSWORD: sslkey_password
     KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD: truststore_password
     KAFKA_CFG_SSL_CLIENT_AUTH: none
+    JMX_PORT: "9999"
     # KAFKA_CFG_SSL_PRINCIPAL_MAPPING_RULES: "RULE:^CN=([^,]+).*$/$1/,DEFAULT"
     # ALLOW_PLAINTEXT_LISTENER: "yes"
     # KAFKA_CFG_AUTHORIZER_CLASS_NAME: org.apache.kafka.metadata.authorizer.StandardAuthorizer
@@ -25,7 +26,7 @@ x-kafka-common: &kafka-common
   volumes:
     - ./infra/certificates/kafka/stores:/bitnami/kafka/config/certs
   healthcheck:
-    test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9091 2>/dev/null || exit 1"]
+    test: ["CMD-SHELL", "env -u JMX_PORT kafka-broker-api-versions.sh --bootstrap-server localhost:9091 2>/dev/null || exit 1"]
     interval: 10s
     timeout: 5s
     retries: 5
@@ -216,27 +217,124 @@ services:
       schema-registry-init:
         condition: service_completed_successfully
 
-  prometheus:
-    image: prom/prometheus:v2.30.3
-    container_name: prometheus
-    ports:
-    - "9090:9090"
-    volumes:
-    - ./infra/prometheus:/etc/prometheus
-    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
-    links:
-    - kafka-connect
-
   grafana:
     build:
-     context: ./infra/grafana
+      context: ./infra/grafana
+      dockerfile: Dockerfile
     container_name: grafana
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
-      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/connect.json
+    restart: unless-stopped
     ports:
-    - "3000:3000"
+      - "3000:3000"
+    environment:
+      GF_PATHS_DATA: /var/lib/grafana
+      GF_SECURITY_ADMIN_PASSWORD: kafka
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org."
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: "prom/prometheus:v2.30.3"
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/prometheus/alert.rules:/etc/prometheus/alert.rules
+    command: "--config.file=/etc/prometheus/prometheus.yml"
+    container_name: prometheus
+
+  alertmanager:
+    image: prom/alertmanager:v0.21.0
+    restart: unless-stopped
+    container_name: alertmanager
+    volumes:
+      - ./infra/alertmanager/config.yml:/etc/alertmanager/config.yml
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+      - '--log.level=debug'
+    ports:
+      - 9093:9093
+
+  jmx-kafka-1:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-1
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5556:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-1.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+
+  jmx-kafka-2:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-2
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5557:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-2.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-2:
+        condition: service_healthy
+
+  jmx-kafka-3:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-3
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5558:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-3.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-3:
+        condition: service_healthy
+
+  jmx-kafka-mirror-1:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-mirror-1
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5559:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-mirror-1.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-mirror-1:
+        condition: service_healthy
+
+  jmx-kafka-mirror-2:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-mirror-2
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5560:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-mirror-2.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-mirror-2:
+        condition: service_healthy
+
+  jmx-kafka-mirror-3:
+    image: bitnami/jmx-exporter
+    restart: unless-stopped
+    container_name: jmx-kafka-mirror-3
+    command: ["5556", "/etc/jmx_exporter/config.yml"]
+    ports:
+      - "5561:5556"
+    volumes:
+      - ./infra/jmx_exporter/config_kafka-mirror-3.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      kafka-mirror-3:
+        condition: service_healthy
 
   postgres:
     image: debezium/postgres:16
@@ -402,67 +500,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-
-  # hadoop-datanode-2:
-  #   image: apache/hadoop:3.4.1
-  #   container_name: hadoop-datanode-2
-  #   hostname: hadoop-datanode-2
-  #   user: "root"
-  #   restart: always
-  #   platform: linux/amd64
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.0"
-  #         memory: "2g"
-  #   shm_size: 10G
-  #   ports:
-  #     - "9865:9865"
-  #     - "9971:9971"
-  #   volumes:
-  #     - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-  #     - ./infra/hadoop/config/hdfs-site-datanode-2.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-  #     - ./infra/hadoop/datanode_entrypoint.sh:/datanode_entrypoint.sh
-  #   entrypoint: ["/bin/bash", "/datanode_entrypoint.sh"]
-  #   command: ["hdfs", "datanode"]
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9865' 2>/dev/null || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #     start_period: 30s
-
-  # hadoop-datanode-3:
-  #   image: apache/hadoop:3.4.1
-  #   container_name: hadoop-datanode-3
-  #   hostname: hadoop-datanode-3
-  #   user: "root"
-  #   restart: always
-  #   platform: linux/amd64
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.0"
-  #         memory: "2g"
-  #   shm_size: 10G
-  #   depends_on:
-  #     hadoop-namenode:
-  #       condition: service_healthy
-  #   ports:
-  #     - "9866:9866"
-  #     - "9972:9972"
-  #   volumes:
-  #     - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-  #     - ./infra/hadoop/config/hdfs-site-datanode-3.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-  #     - ./infra/hadoop/datanode_entrypoint.sh:/datanode_entrypoint.sh
-  #   entrypoint: ["/bin/bash", "/datanode_entrypoint.sh"]
-  #   command: ["hdfs", "datanode"]
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9866' 2>/dev/null || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #     start_period: 30s
 
   kafka-mirror-init:
     image: confluentinc/cp-kafka:latest

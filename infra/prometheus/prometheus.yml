@@ -1,33 +1,36 @@
-# my global config
 global:
-  scrape_interval:     5s # Set the scrape interval to every 15 seconds.
-  evaluation_interval: 5s # Evaluate rules every 15 seconds.
-  # scrape_timeout is set to the global default (10s).
+  scrape_interval:     15s
+  evaluation_interval: 15s
 
-# Alertmanager configuration
+rule_files:
+  - "alert.rules"
+
 alerting:
   alertmanagers:
-    - static_configs:
+    - scheme: http
+      timeout: 10s
+      api_version: v2
+      static_configs:
         - targets:
-          # - alertmanager:9093
+            - 'alertmanager:9093'
 
-# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-rule_files:
-# - "first_rules.yml"
-# - "second_rules.yml"
-
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
 scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: 'prometheus'
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
+  - job_name: 'kafka'
     static_configs:
-      - targets: ['localhost:9090']
+    - targets:
+      - 'jmx-kafka-1:5556'
+      - 'jmx-kafka-2:5556'
+      - 'jmx-kafka-3:5556'
+      - 'jmx-kafka-mirror-1:5556'
+      - 'jmx-kafka-mirror-2:5556'
+      - 'jmx-kafka-mirror-3:5556'
 
-    # Scrape Kafka Connect /metrics
-  - job_name: 'kafka-connect-host'
-    scrape_interval: 1s
+  - job_name: 'kafka-connect'
     static_configs:
-      - targets: ['kafka-connect:9876']
+    - targets:
+      - 'kafka-connect:9876'
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
