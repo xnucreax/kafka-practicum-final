@@ -345,66 +345,63 @@ services:
     volumes:
       - ./infra/kafka-connect/init.sh:/scripts/kafka-connect-init.sh
 
-  # hadoop-namenode:
-  #  image: apache/hadoop:3.4.1
-  #  container_name: hadoop-namenode
-  #  hostname: hadoop-namenode
-  #  user: "root"
-  #  restart: always
-  #  platform: linux/amd64
-  #  deploy:
-  #    resources:
-  #      limits:
-  #        cpus: "1.0"
-  #        memory: "2g"
-  #  shm_size: 10G
-  #  ports:
-  #    - "9870:9870"
-  #    - "9000:9000"
-  #  volumes:
-  #    - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-  #    - ./infra/hadoop/config/hdfs-site-namenode.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-  #    - ./infra/hadoop/namenode_entrypoint.sh:/namenode_entrypoint.sh
-  #  entrypoint: ["/bin/bash", "/namenode_entrypoint.sh"]
-  #  command: ["hdfs", "namenode"]
-  #  healthcheck:
-  #    test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9870' 2>/dev/null || exit 1"]
-  #    interval: 10s
-  #    timeout: 5s
-  #    retries: 10
-  #    start_period: 30s
+  hadoop-namenode:
+   image: apache/hadoop:3.4.1
+   container_name: hadoop-namenode
+   hostname: hadoop-namenode
+   user: "root"
+   restart: always
+   platform: linux/amd64
+   deploy:
+     resources:
+       limits:
+         cpus: "1.0"
+         memory: "2g"
+   shm_size: 1G
+   ports:
+     - "9870:9870"
+     - "9000:9000"
+   volumes:
+     - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+     - ./infra/hadoop/config/hdfs-site-namenode.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+     - ./infra/hadoop/namenode_entrypoint.sh:/namenode_entrypoint.sh
+   entrypoint: ["/bin/bash", "/namenode_entrypoint.sh"]
+   command: ["hdfs", "namenode"]
+   healthcheck:
+     test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9870' 2>/dev/null || exit 1"]
+     interval: 10s
+     timeout: 5s
+     retries: 10
+     start_period: 30s
 
-  # hadoop-datanode-1:
-  #   image: apache/hadoop:3.4.1
-  #   container_name: hadoop-datanode-1
-  #   hostname: hadoop-datanode-1
-  #   user: "root"
-  #   restart: always
-  #   platform: linux/amd64
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.0"
-  #         memory: "2g"
-  #   shm_size: 10G
-  #   depends_on:
-  #     hadoop-namenode:
-  #       condition: service_healthy
-  #   ports:
-  #     - "9864:9864"
-  #     - "9970:9970"
-  #   volumes:
-  #     - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-  #     - ./infra/hadoop/config/hdfs-site-datanode-1.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-  #     - ./infra/hadoop/datanode_entrypoint.sh:/datanode_entrypoint.sh
-  #   entrypoint: ["/bin/bash", "/datanode_entrypoint.sh"]
-  #   command: ["hdfs", "datanode"]
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9864' 2>/dev/null || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #     start_period: 30s
+  hadoop-datanode-1:
+    image: apache/hadoop:3.4.1
+    container_name: hadoop-datanode-1
+    hostname: hadoop-datanode-1
+    user: "root"
+    restart: always
+    platform: linux/amd64
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "2g"
+    shm_size: 1G
+    ports:
+      - "9864:9864"
+      - "9970:9970"
+    volumes:
+      - ./infra/hadoop/config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./infra/hadoop/config/hdfs-site-datanode-1.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./infra/hadoop/datanode_entrypoint.sh:/datanode_entrypoint.sh
+    entrypoint: ["/bin/bash", "/datanode_entrypoint.sh"]
+    command: ["hdfs", "datanode"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9864' 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   # hadoop-datanode-2:
   #   image: apache/hadoop:3.4.1
@@ -419,9 +416,6 @@ services:
   #         cpus: "1.0"
   #         memory: "2g"
   #   shm_size: 10G
-  #   depends_on:
-  #     hadoop-namenode:
-  #       condition: service_healthy
   #   ports:
   #     - "9865:9865"
   #     - "9971:9971"
@@ -486,54 +480,48 @@ services:
       - ./infra/kafka-mirror/init.sh:/kafka-mirror-init/init.sh:ro
     entrypoint: ["/bin/bash", "/kafka-mirror-init/init.sh"]
 
-  # spark:
-  #   image: apache/spark:4.0.0
-  #   ports:
-  #     - "4040:4040"    # Spark UI
-  #     - "15002:15002"  # Spark Connect gRPC
-  #   environment:
-  #     SPARK_NO_DAEMONIZE: "true"
-  #   entrypoint: ["/opt/spark/sbin/start-connect-server.sh"]
-  #   command: ["--master", "local[*]", "--conf", "spark.connect.grpc.binding.port=15002"]
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/15002' 2>/dev/null || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 12
-  #     start_period: 40s
+  spark:
+    image: apache/spark:4.0.0
+    ports:
+      - "4040:4040"    # Spark UI
+      - "15002:15002"  # Spark Connect gRPC
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+    entrypoint: ["/opt/spark/sbin/start-connect-server.sh"]
+    command: ["--master", "local[*]", "--conf", "spark.connect.grpc.binding.port=15002"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/15002' 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
-  # analytics-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.analytics-service
-  #   depends_on:
-  #     spark:
-  #       condition: service_healthy
-  #     kafka-mirror-1:
-  #       condition: service_healthy
-  #     kafka-mirror-2:
-  #       condition: service_healthy
-  #     kafka-mirror-3:
-  #       condition: service_healthy
-  #     kafka-1:
-  #       condition: service_healthy
-  #     kafka-mirror-init:
-  #       condition: service_completed_successfully
-  #     hadoop-namenode:
-  #       condition: service_healthy
-  #     hadoop-datanode-1:
-  #       condition: service_healthy
-  #     hadoop-datanode-2:
-  #       condition: service_healthy
-  #     hadoop-datanode-3:
-  #       condition: service_healthy
-  #   environment:
-  #     - SPARK_REMOTE=sc://spark:15002
-  #     - KAFKA_MIRROR_BOOTSTRAP=kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092
-  #     - KAFKA_BOOTSTRAP=kafka-1:9092,kafka-2:9092,kafka-3:9092
-  #     - KAFKA_SSL_CA_LOCATION=/etc/kafka/certs/ca.crt
-  #   volumes:
-  #     - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
+  analytics-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.analytics-service
+    restart: always
+    container_name: analytics-service
+    depends_on:
+      spark:
+        condition: service_healthy
+      kafka-mirror-init:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
+      hadoop-namenode:
+        condition: service_healthy
+      hadoop-datanode-1:
+        condition: service_healthy
+      # hadoop-datanode-2:
+      #   condition: service_healthy
+    environment:
+      - SPARK_REMOTE=sc://spark:15002
+      - KAFKA_MIRROR_BOOTSTRAP=kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092
+      - KAFKA_BOOTSTRAP=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - KAFKA_SSL_CA_LOCATION=/etc/kafka/certs/ca.crt
+    volumes:
+      - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro
 
   client-service:
     build:

@@ -168,24 +168,24 @@ func writeProduct(client *hdfs.Client, raw []byte) error {
 	return writeHDFS(client, path, jsonBytes)
 }
 
-// writeClientRequest extracts the query from the Kafka Connect embedded-schema envelope
-// and writes it as a plain {"query":"..."} JSON file to HDFS.
 func writeClientRequest(client *hdfs.Client, raw []byte) error {
-	var envelope struct {
-		Payload struct {
-			Query string `json:"query"`
-		} `json:"payload"`
+	if len(raw) < 6 {
+		return fmt.Errorf("message too short")
 	}
-	if err := json.Unmarshal(raw, &envelope); err != nil {
+	jsonBytes := raw[5:]
+
+	var req struct {
+		Query string `json:"query"`
+	}
+	if err := json.Unmarshal(jsonBytes, &req); err != nil {
 		return fmt.Errorf("unmarshal client request: %w", err)
 	}
-	if envelope.Payload.Query == "" {
+	if req.Query == "" {
 		return fmt.Errorf("empty query")
 	}
 
-	data, _ := json.Marshal(map[string]string{"query": envelope.Payload.Query})
 	path := fmt.Sprintf("%s/%s.json", requestsDir, uuid.New().String())
-	return writeHDFS(client, path, data)
+	return writeHDFS(client, path, jsonBytes)
 }
 
 func writeHDFS(client *hdfs.Client, path string, data []byte) error {
@@ -256,26 +256,10 @@ func runAnalyticsJob(spark sparkSession, hdfsClient *hdfs.Client, producer *kafk
 		return fmt.Errorf("create requests view: %w", err)
 	}
 
-	// Algorithm:
-	// 1. Find products whose name matches a search query.
-	// 2. Collect all tags from those matched products.
-	// 3. Find every product that shares at least one of those tags.
 	recs, err := spark.Sql(`
-		WITH matched AS (
-			SELECT DISTINCT cr.query, p.product_id, p.tags
-			FROM client_requests cr
-			JOIN products p ON lower(p.name) LIKE concat('%', lower(cr.query), '%')
-		),
-		matched_tags AS (
-			SELECT DISTINCT m.query, tag
-			FROM matched m
-			LATERAL VIEW explode(m.tags) t AS tag
-		)
-		SELECT DISTINCT mt.query, p.product_id
-		FROM matched_tags mt
-		JOIN products p
-		  LATERAL VIEW explode(p.tags) t2 AS product_tag
-		WHERE product_tag = mt.tag
+		SELECT DISTINCT p.product_id
+		FROM client_requests cr
+		JOIN products p ON lower(p.name) LIKE concat('%', lower(cr.query), '%')
 	`)
 	if err != nil {
 		return fmt.Errorf("analytics sql: %w", err)
@@ -292,10 +276,10 @@ func runAnalyticsJob(spark sparkSession, hdfsClient *hdfs.Client, producer *kafk
 	}
 	for i, row := range rows {
 		vals, err := row.Values()
-		if err != nil || len(vals) < 2 {
+		if err != nil || len(vals) < 1 {
 			continue
 		}
-		productID, _ := vals[1].(string)
+		productID, _ := vals[0].(string)
 		result.ProductIDs[i] = productID
 	}
 
