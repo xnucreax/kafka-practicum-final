@@ -90,7 +90,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(kafka_log_size{env=\"$env\", cluster=~\"$cluster\"}) by (topic)",
+          "expr": "sum(kafka_log_size{cluster=~\"$cluster\"}) by (topic)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -176,7 +176,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(sum(kafka_log_size{env=\"$env\", cluster=~\"$cluster\"}) by (topic, partition) / sum(kafka_cluster_partition_replicascount{env=\"$env\", cluster=~\"$cluster\"}) by(partition, topic)) by (topic)",
+          "expr": "sum(sum(kafka_log_size{cluster=~\"$cluster\"}) by (topic, partition) / sum(kafka_cluster_partition_replicascount{cluster=~\"$cluster\"}) by(partition, topic)) by (topic)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -262,7 +262,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(kafka_log_size{env=\"$env\", cluster=~\"$cluster\"}) by (instance)",
+          "expr": "sum(kafka_log_size{cluster=~\"$cluster\"}) by (instance)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -334,26 +334,6 @@
         "name": "cluster",
         "options": [],
         "query": "label_values(kafka_server_brokerstate, cluster)",
-        "refresh": 1,
-        "regex": "",
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": "Prometheus",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Env",
-        "multi": false,
-        "name": "env",
-        "options": [],
-        "query": "label_values(kafka_log_size{cluster=~\"$cluster\"}, env)",
         "refresh": 1,
         "regex": "",
         "sort": 0,

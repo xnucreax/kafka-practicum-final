@@ -221,15 +221,6 @@ func hdfsHasFiles(client *hdfs.Client, dir string) bool {
 }
 
 func runAnalyticsJob(spark sparkSession, hdfsClient *hdfs.Client, producer *kafka.Producer) error {
-	if !hdfsHasFiles(hdfsClient, productsDir) {
-		log.Printf("[analytics] skipping job: no products in hdfs yet")
-		return nil
-	}
-	if !hdfsHasFiles(hdfsClient, requestsDir) {
-		log.Printf("[analytics] skipping job: no client requests in hdfs yet")
-		return nil
-	}
-
 	hdfsBase := "hdfs://" + hdfsNamenode
 
 	products, err := spark.Read().Format("json").Load(hdfsBase + productsDir)
@@ -265,41 +256,42 @@ func runAnalyticsJob(spark sparkSession, hdfsClient *hdfs.Client, producer *kafk
 		return fmt.Errorf("analytics sql: %w", err)
 	}
 
-	// Collect once — avoids executing the Spark query a second time for Write().
+	// Write recommendations directly to HDFS from the Spark DataFrame.
+	if err := recs.Write().
+		Format("json").
+		Mode("overwrite").
+		Save(hdfsBase + resultsDir); err != nil {
+		log.Printf("[analytics] write recommendations to hdfs: %v", err)
+	}
+
 	rows, err := recs.Collect()
 	if err != nil {
 		return fmt.Errorf("collect rows: %w", err)
 	}
 
 	result := Recommendations{
-		ProductIDs: make([]string, len(rows)),
+		ProductIDs: make([]string, 0, len(rows)),
 	}
-	for i, row := range rows {
+	for _, row := range rows {
 		vals, err := row.Values()
 		if err != nil || len(vals) < 1 {
 			continue
 		}
 		productID, _ := vals[0].(string)
-		result.ProductIDs[i] = productID
+		result.ProductIDs = append(result.ProductIDs, productID)
 	}
 
-	resultsFile := resultsDir + "/results.json"
-	_ = hdfsClient.Remove(resultsFile)
 	data, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("marshal results: %w", err)
 	}
-	if err := writeHDFS(hdfsClient, resultsFile, data); err != nil {
-		log.Printf("[analytics] write results to hdfs: %v", err)
-	}
 
 	topic := recsTopic
+	key := "recommendation"
 	_ = producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{
-			Topic:     &topic,
-			Partition: kafka.PartitionAny,
-		},
-		Value: data,
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		Key:            []byte(key),
+		Value:          data,
 	}, nil)
 
 	producer.Flush(5000)

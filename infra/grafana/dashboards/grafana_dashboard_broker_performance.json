@@ -112,7 +112,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Total\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Total\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{ aggregate}}",
@@ -120,7 +120,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Total\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Total\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{ aggregate}}",
@@ -128,7 +128,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Total\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Total\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{ aggregate}}",
@@ -242,7 +242,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_network_socket_server_processor_avg_idle_percent{instance=~\"$instance\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_socket_server_processor_avg_idle_percent{instance=~\"$instance\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "refId": "A",
@@ -327,7 +327,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_server_request_handler_avg_idle_percent{instance=~\"$instance\", aggregate=~\"OneMinuteRate\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_server_request_handler_avg_idle_percent{instance=~\"$instance\", aggregate=~\"OneMinuteRate\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "refId": "A",
@@ -411,7 +411,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",instance=~\"$instance\",request=~\"$request\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_per_sec{aggregate=~\"OneMinuteRate\",instance=~\"$instance\",request=~\"$request\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "",
@@ -497,7 +497,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_network_request_channel_queue_size{instance=~\"$instance\", queue=~\"Response\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_channel_queue_size{instance=~\"$instance\", queue=~\"Response\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -583,7 +583,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_network_request_channel_queue_size{instance=~\"$instance\", queue=~\"Request\", env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_channel_queue_size{instance=~\"$instance\", queue=~\"Request\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -646,7 +646,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"RequestQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"RequestQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -654,7 +654,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"RequestQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"RequestQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -662,7 +662,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"RequestQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"RequestQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -752,7 +752,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Local\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Local\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -760,7 +760,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Local\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Local\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -768,7 +768,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Local\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Local\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -858,7 +858,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Remote\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Remote\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -866,7 +866,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Remote\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Remote\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -874,7 +874,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Remote\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Remote\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -964,7 +964,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Throttle\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"Throttle\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -972,7 +972,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Throttle\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"Throttle\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -980,7 +980,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Throttle\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"Throttle\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1070,7 +1070,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"ResponseQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"ResponseQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1078,7 +1078,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"ResponseQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"ResponseQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1086,7 +1086,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"ResponseQueue\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"ResponseQueue\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1176,7 +1176,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"ResponseSend\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"Mean\", scope=~\"ResponseSend\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1184,7 +1184,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"ResponseSend\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"75thPercentile\", scope=~\"ResponseSend\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1192,7 +1192,7 @@
           "step": 10
         },
         {
-          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"ResponseSend\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_request_metrics_time_ms{instance=~\"$instance\", request=~\"$request\", aggregate=~\"99thPercentile\", scope=~\"ResponseSend\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} / {{aggregate}}",
@@ -1282,7 +1282,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_processor_idle_percent{instance=~\"$instance\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_network_processor_idle_percent{instance=~\"$instance\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{processor}}",
@@ -1373,7 +1373,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_server_request_handler_avg_idle_percent{instance=~\"$instance\", aggregate=~\"OneMinuteRate\",env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_server_request_handler_avg_idle_percent{instance=~\"$instance\", aggregate=~\"OneMinuteRate\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{processor}}",
@@ -1462,32 +1462,12 @@
         "current": {},
         "datasource": "Prometheus",
         "hide": 0,
-        "includeAll": false,
-        "label": "Envrionment",
-        "multi": false,
-        "name": "env",
-        "options": [],
-        "query": "label_values(kafka_server_brokerstate{cluster=~\"$cluster\"}, env)",
-        "refresh": 1,
-        "regex": "",
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": "Prometheus",
-        "hide": 0,
         "includeAll": true,
         "label": "Broker Host",
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": "label_values(kafka_network_request_metrics_time_ms{env=\"$env\", cluster=~\"$cluster\"}, instance)",
+        "query": "label_values(kafka_network_request_metrics_time_ms{cluster=~\"$cluster\"}, instance)",
         "refresh": 1,
         "regex": "",
         "sort": 0,

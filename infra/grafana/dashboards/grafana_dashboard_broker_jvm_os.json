@@ -89,7 +89,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_non_heap_usage{env=\"$env\", type=\"used\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_non_heap_usage{type=\"used\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}} ",
@@ -175,7 +175,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_heap_usage{env=\"$env\", type=\"used\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_heap_usage{type=\"used\", cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -261,7 +261,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_gc_collection_time{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_gc_collection_time{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}} / {{name}}",
@@ -345,7 +345,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_os_systemcpuload{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_os_systemcpuload{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -430,7 +430,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_os_processcpuload{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_os_processcpuload{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -517,7 +517,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_os_openfiledescriptorcount{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_os_openfiledescriptorcount{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -602,7 +602,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_os_freephysicalmemorysize{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_os_freephysicalmemorysize{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -687,7 +687,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_jvm_os_committedvirtualmemorysize{env=\"$env\", cluster=~\"$cluster\"}",
+          "expr": "kafka_jvm_os_committedvirtualmemorysize{cluster=~\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{instance}}",
@@ -757,26 +757,6 @@
         "name": "cluster",
         "options": [],
         "query": "label_values(kafka_server_brokerstate, cluster)",
-        "refresh": 1,
-        "regex": "",
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": "Prometheus",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Env",
-        "multi": false,
-        "name": "env",
-        "options": [],
-        "query": "label_values(kafka_jvm_os_openfiledescriptorcount{cluster=~\"$cluster\"}, env)",
         "refresh": 1,
         "regex": "",
         "sort": 0,

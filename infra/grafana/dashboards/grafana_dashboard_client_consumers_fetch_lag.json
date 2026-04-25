@@ -90,7 +90,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(kafka_consumer_fetch_manager_metrics_records_lag{env=\"$env\", topic=\"$topic\"}) by(topic, client_id, instance)",
+          "expr": "sum(kafka_consumer_fetch_manager_metrics_records_lag{topic=\"$topic\"}) by(topic, client_id, instance)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{client_id}} ({{instance}})",
@@ -177,7 +177,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_consumer_fetch_manager_metrics_fetch_size_avg{env=\"$env\", topic=\"$topic\"}",
+          "expr": "kafka_consumer_fetch_manager_metrics_fetch_size_avg{topic=\"$topic\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{client_id}} ({{instance}})",
@@ -265,7 +265,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_consumer_fetch_manager_metrics_bytes_consumed_rate{env=\"$env\", topic=\"$topic\"}",
+          "expr": "kafka_consumer_fetch_manager_metrics_bytes_consumed_rate{topic=\"$topic\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -355,7 +355,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_consumer_fetch_manager_metrics_records_consumed_rate{env=\"$env\", topic=\"$topic\"}",
+          "expr": "kafka_consumer_fetch_manager_metrics_records_consumed_rate{topic=\"$topic\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -428,26 +428,6 @@
         "name": "cluster",
         "options": [],
         "query": "label_values(kafka_server_brokerstate, cluster)",
-        "refresh": 1,
-        "regex": "",
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": "Prometheus",
-        "hide": 0,
-        "includeAll": false,
-        "label": "env",
-        "multi": false,
-        "name": "env",
-        "options": [],
-        "query": "label_values(kafka_consumer_fetch_manager_metrics_records_consumed_rate, env)",
         "refresh": 1,
         "regex": "",
         "sort": 0,

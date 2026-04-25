@@ -471,7 +471,7 @@ services:
      interval: 10s
      timeout: 5s
      retries: 10
-     start_period: 30s
+     start_period: 60s
 
   hadoop-datanode-1:
     image: apache/hadoop:3.4.1
@@ -499,8 +499,8 @@ services:
       test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9864' 2>/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 60s
 
   kafka-mirror-init:
     image: confluentinc/cp-kafka:latest
