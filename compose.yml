@@ -571,6 +571,8 @@ services:
     depends_on:
       kafka-init:
         condition: service_completed_successfully
+      kafka-mirror-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       kafka-connect-init:
@@ -582,6 +584,7 @@ services:
       - SCHEMA_REGISTRY_URL=http://schema-registry:8081
       - POSTGRES_DSN=postgres://postgres:postgres@postgres:5432/postgres
       - KAFKA_BOOTSTRAP=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - KAFKA_MIRROR_BOOTSTRAP=kafka-mirror-1:9092,kafka-mirror-2:9092,kafka-mirror-3:9092
       - KAFKA_SSL_CA_LOCATION=/etc/kafka/certs/ca.crt
     volumes:
       - ./infra/certificates/ca/certs/ca.crt:/etc/kafka/certs/ca.crt:ro

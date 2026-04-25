@@ -36,7 +36,9 @@
       "Bash(./scripts/put-products.sh *)",
       "Bash(docker network *)",
       "Bash(docker port *)",
-      "Bash(docker inspect *)"
+      "Bash(docker inspect *)",
+      "Bash(make bins *)",
+      "Bash(go list *)"
     ]
   }
 }
